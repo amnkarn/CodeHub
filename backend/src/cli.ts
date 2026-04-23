@@ -1,7 +1,6 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers"
-import { commitRepo, init, pullRepo, pushRepo, revertRepo } from "./controller/command.controller.js";
-import { addRepo } from "./controller/command.controller.js";
+import { commitRepo, init, pullRepo, pushRepo, revertRepo, addRepo } from "./controller/command.controller.js";
 
 
 // command controller
@@ -25,7 +24,7 @@ yargs(hideBin(process.argv))
     )
 
     .command(
-        "commit",
+        "commit <message>",
         "Commit the staged file",
         (yargs) => {
             return yargs.positional("message", {

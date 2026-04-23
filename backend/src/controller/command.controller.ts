@@ -1,5 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
+import { v4 as uuidv4 } from "uuid";
+import type { ArgumentsCamelCase } from "yargs";
 
 //import { exec } from "child_process";
 //import { promisify } from "util";
@@ -62,8 +64,40 @@ export async function addRepo(argv: any) {
     }
 }
 
-export function commitRepo() {
-    console.log("add repo command called")
+interface CommitArgs {
+    message: string
+}
+
+export async function commitRepo(argv: ArgumentsCamelCase<CommitArgs>) {
+    const repoPath = path.resolve(process.cwd(), ".codeHub");
+    const stagedPath = path.resolve(repoPath, "staging");
+    const commitPath = path.resolve(repoPath, "commits");
+
+    try {
+        const commitId = uuidv4();
+
+        const commitDir = path.join(commitPath, commitId);
+        await fs.mkdir(commitDir, { recursive: true }); //created dir with the commitId
+
+        const files = await fs.readdir(stagedPath); //read all staged file
+        for(const file of files) {
+            await fs.copyFile( //copy in commit folder
+                //stagedPath = 'address', file = 'file name'
+                path.join(stagedPath, file),
+                path.join(commitDir, file)
+            );
+        }
+
+        const commitMsg = argv.message;
+        //console.log(commitMsg);
+        await fs.writeFile( //created commit.json
+            path.join(commitDir, "commit.json"),
+            JSON.stringify({ commitMsg, date: new Date().toISOString() })
+        )
+
+    } catch (error) {
+        console.log("Error in commiting: ", error);
+    }
 }
 
 export function pushRepo() {
