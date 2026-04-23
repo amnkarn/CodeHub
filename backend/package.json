@@ -2,16 +2,17 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -b",
-    "start": "node ./dist/index.js",
-    "dev": "pnpm build && pnpm start"
+    "start": "node ./dist/server.js",
+    "dev": "pnpm build && pnpm start",
+    "code": "tsx ./src/cli.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "aman karn",
   "license": "ISC",
   "packageManager": "pnpm@10.33.0",
   "dependencies": {
@@ -21,6 +22,7 @@
     "yargs": "^18.0.0"
   },
   "devDependencies": {
-    "@types/yargs": "^17.0.35"
+    "@types/yargs": "^17.0.35",
+    "tsx": "^4.21.0"
   }
 }
