@@ -1,1 +1,1 @@
-{"root":["./src/app.ts","./src/cli.ts","./src/server.ts","./src/controller/command.controller.ts","./src/controller/user.controller.ts","./src/router/user.route.ts"],"version":"6.0.3"}
+{"root":["./src/app.ts","./src/cli.ts","./src/server.ts","./src/config/aws.config.ts","./src/config/db.ts","./src/controller/command.controller.ts","./src/controller/user.controller.ts","./src/router/user.route.ts","./src/validators/loginschema.ts"],"version":"6.0.3"}

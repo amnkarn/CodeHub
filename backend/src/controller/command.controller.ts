@@ -1,5 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
+import { s3, S3_BUCKET } from "../config/aws.config.js";
+import { Upload } from "@aws-sdk/lib-storage";
 import { v4 as uuidv4 } from "uuid";
 import type { ArgumentsCamelCase } from "yargs";
 
@@ -100,8 +102,40 @@ export async function commitRepo(argv: ArgumentsCamelCase<CommitArgs>) {
     }
 }
 
-export function pushRepo() {
-    console.log("add repo command called")
+export async function pushRepo() {
+    const repoPath = path.resolve(process.cwd(), ".codeHub");
+    const commitsPath = path.join(repoPath, "commits");
+
+    try {
+        const commitDirs = await fs.readdir(commitsPath);
+
+        for(const commitDir of commitDirs) {
+            const commitPath = path.join(commitsPath, commitDir);
+            const files = await fs.readdir(commitPath);
+
+            for(const file of files) {
+                const filePath = path.join(commitPath, file);
+
+                const fileContent = await fs.readFile(filePath);
+
+                
+                const parallelUploads3  = new Upload({
+                    client: s3,
+                    params: {
+                        Bucket: S3_BUCKET,
+                        Key: `commits/${commitDir}`,
+                        Body: fileContent,
+                    }
+                })
+
+                await parallelUploads3.done();
+            }
+        }
+        console.log("All commits pushed to S3.");
+        
+    } catch (error) {
+        console.log("Error pushing to s3: ", error);
+    }
 }
 
 export function pullRepo() {
