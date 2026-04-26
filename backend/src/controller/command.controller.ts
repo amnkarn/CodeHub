@@ -4,6 +4,7 @@ import { s3, S3_BUCKET } from "../config/aws.config.js";
 import { Upload } from "@aws-sdk/lib-storage";
 import { v4 as uuidv4 } from "uuid";
 import type { ArgumentsCamelCase } from "yargs";
+import { GetObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 
 //import { exec } from "child_process";
 //import { promisify } from "util";
@@ -138,8 +139,55 @@ export async function pushRepo() {
     }
 }
 
-export function pullRepo() {
-    console.log("add repo command called")
+export async function pullRepo() {
+    const repoPath = path.resolve(process.cwd(), ".codeHub");
+    const S3Bucket = "codehub-876163988927-us-east-1-an";
+
+    const params = {
+        Bucket: S3Bucket,
+        Prefix: "commits/"
+    }
+
+    try {
+        // get list of all files from bucket
+        const command = new ListObjectsV2Command(params);
+        const data = await s3.send(command);
+
+        if(!data.Contents) {
+            console.log("No commits found in S3");
+            return;
+        }
+
+        // loop of the list and download
+        for(const file of data.Contents) {
+            //console.log(file);
+            const key = file.Key;
+            if(!key) continue;
+
+            const localFilePath = path.join(repoPath, key);
+            const localDir = path.dirname(localFilePath);
+
+            await fs.mkdir(localDir, {recursive: true});
+
+            const getObjParams = {
+                Bucket: S3_BUCKET,
+                Key: key,
+            }
+            const getCommand = new GetObjectCommand(getObjParams);
+            const response = await s3.send(getCommand); //fetch actual file
+            
+            if(response.Body) {
+                const byteArray = await response.Body.transformToByteArray();
+                await fs.writeFile(localFilePath, Buffer.from(byteArray));
+                console.log(`Pulled: ${key}`);
+            }
+        }
+
+        console.log("All commits pulled from s3 successfully");
+
+    } catch (error) {
+        console.log("Error in pulling from s3: ", error);
+    }
 }
 
 export function revertRepo() {
