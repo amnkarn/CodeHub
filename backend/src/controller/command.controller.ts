@@ -123,7 +123,7 @@ export async function pushRepo() {
                     client: s3,
                     params: {
                         Bucket: S3_BUCKET,
-                        Key: `commits/${commitDir}`,
+                        Key: `commits/${commitDir}/${file}`,
                         Body: fileContent,
                     }
                 })
