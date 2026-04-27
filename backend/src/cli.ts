@@ -8,6 +8,8 @@ interface revertArgs {
 
 // command controller
 yargs(hideBin(process.argv))
+    .command('start', "start new server", {}, start)
+
     .command('init', 'Initialise a new repository', {}, init)
 
     .command('push', 'Push commits to CodeHub', {}, pushRepo)
@@ -63,3 +65,8 @@ yargs(hideBin(process.argv))
 
     .demandCommand(1, "you need atleast one command")
     .help().argv;
+
+
+function start() {
+    console.log('server called')
+}
