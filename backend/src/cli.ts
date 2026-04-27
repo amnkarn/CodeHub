@@ -1,7 +1,10 @@
-import yargs from "yargs";
+import yargs, { type ArgumentsCamelCase } from "yargs";
 import { hideBin } from "yargs/helpers"
 import { commitRepo, init, pullRepo, pushRepo, revertRepo, addRepo } from "./controller/command.controller.js";
 
+interface revertArgs {
+    commitId: string
+}
 
 // command controller
 yargs(hideBin(process.argv))
@@ -36,7 +39,7 @@ yargs(hideBin(process.argv))
     )
 
     .command(
-        "revert <commitID>",
+        "revert <commitId>",
         "Revert to specific commit",
         (yargs) => {
             return yargs.positional("commitId", {
@@ -44,7 +47,18 @@ yargs(hideBin(process.argv))
                 type: "string"
             })
         },
-        revertRepo
+        (handlerArgs) => {
+            console.log("DEBUG - Received Args:", handlerArgs);
+            const { commitId } = handlerArgs;
+            console.log(commitId)
+
+            if (!commitId || typeof commitId !== 'string') {
+                console.error("Please provide a valid Commit ID.");
+                return;
+            }
+
+            revertRepo(handlerArgs as revertArgs);
+        }
     )
 
     .demandCommand(1, "you need atleast one command")

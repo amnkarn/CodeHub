@@ -6,9 +6,6 @@ import { v4 as uuidv4 } from "uuid";
 import type { ArgumentsCamelCase } from "yargs";
 import { GetObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 
-//import { exec } from "child_process";
-//import { promisify } from "util";
-//const execPromise = promisify(exec);
 
 
 export async function init() {
@@ -190,6 +187,31 @@ export async function pullRepo() {
     }
 }
 
-export function revertRepo() {
-    console.log("add repo command called")
+export async function revertRepo({commitId}: {commitId: string}) {
+    const repoPath = path.resolve(process.cwd(), ".codeHub");
+    const commitPath = path.join(repoPath, "commits", commitId);// '/.codeHub/commits/commitId'
+    const checkoutDir = path.resolve(repoPath, "..");// '/Project/
+
+    try {
+        //check's does commit exists
+        try {
+            await fs.access(commitPath);
+        } catch (error) {
+            console.log(`Error: Commit ${commitId} not found.`)
+        }
+
+        const files = await fs.readdir(commitPath);
+
+        for(const file of files) {
+            const srcPath = path.join(commitPath, file);// '/.codeHub/commits/commitId/app.ts'
+            const destPath = path.join(checkoutDir, file);// '/Project/app.ts
+
+            await fs.cp(srcPath, destPath, { recursive: true });
+        }
+
+        console.log(`Commit ${commitId} reverted successfully.`);
+
+    } catch (error) {
+        console.log("Unable to revert: ", error);
+    }
 }
