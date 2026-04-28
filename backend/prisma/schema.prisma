@@ -15,12 +15,48 @@ model User {
   password          String
 
   repositories      Repository[]
-  //followedUser      User[]
 
+  followedBy   User[]       @relation("UserFollows")
+  following    User[]       @relation("UserFollows")
+  
+  starRepos         Repository[]    @relation("UserStarredRepos")
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 }
 
 model Repository {
   id                Int             @id                  @default(autoincrement())
-  user              User            @relation(fields: [userId], references: [id])
-  userId            String
+  name              String          @unique
+  description       String
+  content           String[]
+  visibility        Boolean         @default(true)
+  issues            Issue[]    
+
+  owner             User            @relation(fields: [ownerId], references: [id])
+  ownerId           String
+
+  staredBy          User[]          @relation("UserStarredRepos")
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+enum Status {
+  open
+  closed
+  assigned
+}
+
+model Issue {
+  id                Int             @id                  @default(autoincrement())
+  title             String
+  description       String
+  status            Status          @default(open)
+
+  repository        Repository      @relation(fields: [repoId], references: [id])
+  repoId            Int
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 }
