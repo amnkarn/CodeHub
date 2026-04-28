@@ -1,34 +1,42 @@
 import { Router, type Request, type Response } from "express";
 import { loginSchema } from "../validators/loginSchema.js";
+import {
+    deleteUserProfile,
+    followUser, 
+    getCurrentUser, 
+    getMyFollowers, 
+    getMyFollowing, 
+    getUserByUsername, 
+    getUserFollowers, 
+    getUserFollowing,
+    unfollowUser,
+    updateUserProfile
+} from "../controller/user.controller.js";
 
 const userRouter: Router = Router();
 
-userRouter.get("/register", async (req: Request, res: Response) => {
-    const parsedResult = loginSchema.safeParse(req.body);
-    if(!parsedResult.success) {
-        throw new Error("Something is missing");
-    }
 
-    try {
-        const { username, email, password } = parsedResult.data;
+//User Profile (Self & Others)
+userRouter.get("/me", getCurrentUser)
 
-        //const findUser = await 
+userRouter.patch("/me", updateUserProfile)
 
-    } catch (error) {
-        console.log(error);
-    }
-})
+userRouter.delete("/me", deleteUserProfile)
 
-userRouter.get("/login", async (req: Request, res: Response) => {
-    
-})
+userRouter.get("/me/followers", getMyFollowers);
 
-userRouter.get("/get-me", async (req: Request, res: Response) => {
-    
-})
+userRouter.get("/me/following", getMyFollowing);
 
-userRouter.get("/logout", async (req: Request, res: Response) => {
-    
-})
+//Public profiles
+userRouter.get("/:username", getUserByUsername)
+
+userRouter.get("/:username/followers", getUserFollowers)
+
+userRouter.get("/:username/following", getUserFollowing)
+
+userRouter.post("/:username/follow", followUser)
+
+userRouter.delete("/:username/follow", unfollowUser)
+
 
 export default userRouter;
