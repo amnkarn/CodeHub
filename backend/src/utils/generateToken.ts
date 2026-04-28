@@ -31,3 +31,8 @@ export default function generateToken(userId: string, res: Response) {
         sameSite: "strict"
     })
 }
+
+export interface jwtPayload {
+    id: string,
+    jti: string
+}

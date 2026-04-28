@@ -12,20 +12,22 @@ import {
     unfollowUser,
     updateUserProfile
 } from "../controller/user.controller.js";
+import isAuthenticated from "../middlewares/isAuthenticated.js";
 
 const userRouter: Router = Router();
 
 
 //User Profile (Self & Others)
-userRouter.get("/me", getCurrentUser)
+userRouter.get("/me", isAuthenticated, getCurrentUser)
 
-userRouter.patch("/me", updateUserProfile)
+userRouter.patch("/me", isAuthenticated, updateUserProfile)
 
-userRouter.delete("/me", deleteUserProfile)
+userRouter.delete("/me", isAuthenticated, deleteUserProfile)
 
-userRouter.get("/me/followers", getMyFollowers);
+userRouter.get("/me/followers", isAuthenticated, getMyFollowers);
 
-userRouter.get("/me/following", getMyFollowing);
+userRouter.get("/me/following", isAuthenticated, getMyFollowing);
+
 
 //Public profiles
 userRouter.get("/:username", getUserByUsername)
@@ -34,9 +36,11 @@ userRouter.get("/:username/followers", getUserFollowers)
 
 userRouter.get("/:username/following", getUserFollowing)
 
-userRouter.post("/:username/follow", followUser)
 
-userRouter.delete("/:username/follow", unfollowUser)
+//Follow and Unfollow user's
+userRouter.post("/:username/follow", isAuthenticated, followUser)
+
+userRouter.delete("/:username/follow", isAuthenticated, unfollowUser)
 
 
 export default userRouter;

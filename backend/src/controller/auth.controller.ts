@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { loginSchema, registerSchema } from "../validators/authSchema.js";
 import prismaClient from "../config/db.js";
 import bcrypt from "bcrypt";
-import generateToken from "../utils/generateToken.js";
+import generateToken, { type jwtPayload } from "../utils/generateToken.js";
 import redisClient from "../config/redis.js";
 import jwt from "jsonwebtoken";
 import blackListToken from "../utils/blacklistToken.js";
@@ -106,10 +106,7 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 }
 
-interface jwtPayload {
-    id: string,
-    jti: string
-}
+
 
 export const refreshAccessToken = async (req: Request, res: Response) => {
     const accessToken = req.cookies.accessToken;

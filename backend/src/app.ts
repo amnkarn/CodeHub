@@ -7,9 +7,10 @@ import cookiParser from "cookie-parser";
 
 const app: Application = express();
 app.use(express.json());
+app.use(cookiParser());
 app.use(morgan('dev'));
 app.use(cors({ origin: "*" }));
-app.use(cookiParser());
+app.use(express.urlencoded({ extended: true }));
 
 
 app.get("/", async (req, res) => {
