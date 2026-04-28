@@ -10,26 +10,32 @@ datasource db {
 
 model User {
   id                String          @id       @default(uuid())
-  username          String
+  username          String          @unique
   email             String          @unique
   password          String
 
   repositories      Repository[]
 
-  followedBy   User[]       @relation("UserFollows")
-  following    User[]       @relation("UserFollows")
+  followedBy        User[]       @relation("UserFollows")
+  following         User[]       @relation("UserFollows")
   
   starRepos         Repository[]    @relation("UserStarredRepos")
+
+  issues            Issue[]
+
+  comments          Comments[]
+
+  forks             Fork[]
 
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 }
 
+
 model Repository {
-  id                Int             @id                  @default(autoincrement())
-  name              String          @unique
+  id                String          @id       @default(uuid())
+  name              String
   description       String
-  content           String[]
   visibility        Boolean         @default(true)
   issues            Issue[]    
 
@@ -38,9 +44,16 @@ model Repository {
 
   staredBy          User[]          @relation("UserStarredRepos")
 
+  comments          Comments[]
+
+  fork              Fork[]
+
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+
+  @@unique([name, ownerId]) //unique only within same owner
 }
+
 
 enum Status {
   open
@@ -49,14 +62,52 @@ enum Status {
 }
 
 model Issue {
-  id                Int             @id                  @default(autoincrement())
+  id                String          @id       @default(uuid())
   title             String
   description       String
   status            Status          @default(open)
 
   repository        Repository      @relation(fields: [repoId], references: [id])
-  repoId            Int
+  repoId            String
+
+  author            User            @relation(fields: [authorId], references: [id])
+  authorId          String
+
+  comments          Comments[]
 
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+}
+
+
+model Comments {
+  id                String          @id       @default(uuid())
+  comment           String
+
+  author            User            @relation(fields: [authorId], references: [id])
+  authorId          String
+
+  issue             Issue           @relation(fields: [issueId], references: [id])
+  issueId           String
+
+  repo              Repository      @relation(fields: [repoId], references: [id])
+  repoId            String
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+
+model Fork {
+  id                Int             @id                   @default(autoincrement())
+
+  sourceCode        Repository      @relation(fields: [sourceCodeRepoId], references: [id])
+  sourceCodeRepoId  String
+
+  forkedBy          User            @relation(fields: [forkedById], references: [id])
+  forkedById        String
+
+  createdAt         DateTime        @default(now())
+
+  @@unique([sourceCodeRepoId, forkedById]) //only one fork per user per repo
 }
