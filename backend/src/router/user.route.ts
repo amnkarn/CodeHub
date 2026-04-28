@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from "express";
-import { loginSchema } from "../validators/loginSchema.js";
+import { loginSchema } from "../validators/authSchema.js";
 import {
     deleteUserProfile,
     followUser, 
