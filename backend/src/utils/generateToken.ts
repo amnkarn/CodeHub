@@ -2,19 +2,19 @@ import { type Response } from "express";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 
-const secret = process.env.secret!;
+const secret = process.env.JWT_SECRET!;
 
 export default function generateToken(userId: string, res: Response) {
     const refreshToken = jwt.sign({
         id: userId,
-        jti: uuidv4,
+        jti: uuidv4(),
     }, secret, {
         expiresIn: 7 * 24 * 60 *60 * 1000,
     })
     
     const accessToken = jwt.sign({
         id: userId,
-        jti: uuidv4
+        jti: uuidv4(),
     }, secret, {
         expiresIn: "15m"
     })

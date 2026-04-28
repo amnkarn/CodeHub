@@ -3,6 +3,9 @@ import { loginSchema, registerSchema } from "../validators/authSchema.js";
 import prismaClient from "../config/db.js";
 import bcrypt from "bcrypt";
 import generateToken from "../utils/generateToken.js";
+import redisClient from "../config/redis.js";
+import jwt from "jsonwebtoken";
+import blackListToken from "../utils/blacklistToken.js";
 
 //Authentication (Auth Controller)
 export const registerUser = async (req: Request, res: Response) => {
@@ -18,7 +21,8 @@ export const registerUser = async (req: Request, res: Response) => {
         
         const findUser = await prismaClient.user.findUnique({
             where: {
-                username
+                username,
+                email
             }
         })
         
@@ -41,7 +45,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
         generateToken(user.id, res); //token seted
 
-        res.send(201).json({
+        res.status(201).json({
             message: "User created successfully",
             data: {
                 username: user.username,
@@ -80,7 +84,7 @@ export const loginUser = async (req: Request, res: Response) => {
             })
         }
 
-        const isValid = bcrypt.compare(password, user.password);
+        const isValid = await bcrypt.compare(password, user.password);
 
         if(!isValid) {
             return res.status(401).json({
@@ -102,11 +106,83 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 }
 
-export const refreshAccessToken = (req: Request, res: Response) => {
-    console.log("req reached");;
+interface jwtPayload {
+    id: string,
+    jti: string
+}
+
+export const refreshAccessToken = async (req: Request, res: Response) => {
+    const accessToken = req.cookies.accessToken;
+    const refreshToken = req.cookies.refreshToken;
+
+    if(!accessToken || !refreshToken) {
+        return res.status(401).json({
+            message: "Token is missing"
+        })
+    }
+
+    try {
+        const decodeRefreshToken = await jwt.verify(refreshToken, process.env.JWT_SECRET!) as jwtPayload;
+        const decodeAccessToken = await jwt.verify(accessToken, process.env.JWT_SECRET!) as jwtPayload;
+
+        const isRefreshTokenBlacklisted = await redisClient.get(decodeRefreshToken.jti); //jti is unique
+        const isAccessTokenBlacklisted = await redisClient.get(decodeAccessToken.jti);
+
+        if(isRefreshTokenBlacklisted || isAccessTokenBlacklisted) {
+            return res.status(400).json({
+                message: "Token is blacklisted, can't refresh the token"
+            })
+        }
+
+        blackListToken(decodeRefreshToken.jti, 604800);
+        blackListToken(decodeAccessToken.jti, 900);
+
+        generateToken(decodeRefreshToken.id, res);
+
+        res.status(200).json({
+            message: "Token refreshed successfully"
+        })
+
+    } catch (error) {
+        console.log("Error in token refreshing: ", error);
+        res.status(500).json({
+            message: "Error in token refreshing"
+        })
+    }
+
 }
 
 
 export const logoutUser = (req: Request, res: Response) => {
-    console.log("req reached");;
+    const refreshToken = req.cookies.refreshToken;
+    const accessToken = req.cookies.accessToken;
+
+    if(!refreshToken || !accessToken) {
+        return res.status(400).json({
+            message: "token is missing"
+        })
+    }
+
+    try {
+        const decodeRefreshToken = jwt.verify(refreshToken, process.env.JWT_SECRET!) as jwtPayload;
+        const decodeAccessToken = jwt.verify(accessToken, process.env.JWT_SECRET!) as jwtPayload;
+        
+        //blacklist both tokens
+        blackListToken(decodeRefreshToken.jti, 604800);
+        blackListToken(decodeAccessToken.jti, 900);
+
+        res.clearCookie("refreshToken");
+        res.clearCookie("accessToken");
+
+        res.status(200).json({
+            message: "Successully loged out"
+        })
+        
+    } catch (error) {
+        console.log("Error in logout funtion: ", error);
+
+        res.status(500).json({
+            message: "Error in server",
+        })
+    }
 }
