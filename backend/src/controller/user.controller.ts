@@ -97,23 +97,109 @@ export const updateUserProfile = async (req: Request, res: Response) => {
     }
 }
 
-export const deleteUserProfile = (req: Request, res: Response) => {
-    console.log("req reached");
+export const deleteUserProfile = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if(!userId) return;
+
+    try {
+        const user = await prismaClient.user.delete({
+            where: {
+                id: userId
+            }
+        })
+
+        res.status(200).json({
+            message: "User deleted successfully"
+        })
+
+    } catch(err) {
+        console.log("Error in delete controller: ", err);
+        res.status(500).json({
+            message: "Error in server"
+        })
+    }
 }
 
-export const getMyFollowers = (req: Request, res: Response) => {
-    console.log("req reached");;
+export const getMyFollowers = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if(!userId) return;
+
+    try {
+        //following me
+        const user = await prismaClient.user.findFirst({
+            where: {
+                id: userId
+            },
+            include: {
+                followedBy: true,
+                following: true
+            }
+        })
+        
+        res.status(200).json({
+            user: user?.followedBy
+        })
+        
+    } catch (error) {
+        console.log("Error in myyFollowwers controller: ", error);
+        res.status(500).json({
+            message: "Error in server"
+        })
+    }
 }
 
 
-export const getMyFollowing = (req: Request, res: Response) => {
-    console.log("req reached");;
+export const getMyFollowing = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if(!userId) return;
+
+    try {
+        //following me
+        const user = await prismaClient.user.findFirst({
+            where: {
+                id: userId
+            },
+            include: {
+                followedBy: true,
+                following: true
+            }
+        })
+        
+        res.status(200).json({
+            user: user?.following
+        })
+        
+    } catch (error) {
+        console.log("Error in myyFollowwers controller: ", error);
+        res.status(500).json({
+            message: "Error in server"
+        })
+    }
 }
 
 
 //Public profile controller
-export const getUserByUsername = (req: Request, res: Response) => {
-    console.log("req reached");;
+export const getUserByUsername = async (req: Request, res: Response) => {
+    const username = req.body.username;
+
+    try {
+        const user = prismaClient.user.findUnique({
+            where: {
+                username
+            }
+        })
+
+        res.status(200).json({
+            message: "User found succeesfully",
+            user
+        })
+        
+    } catch (error) {
+        console.log("Error in finding uesr: ", error);
+        res.status(500).json({
+            message: "Can't searrch the profile"
+        })
+    }
 }
 
 export const getUserFollowers = (req: Request, res: Response) => {
