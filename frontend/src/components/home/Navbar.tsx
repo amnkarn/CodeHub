@@ -4,7 +4,7 @@ import Issue from "../../assets/icons/Issue";
 import Pull from "../../assets/icons/Pull";
 import Repos from "../../assets/icons/Repos";
 import Notification from "../../assets/icons/Notifications";
-import ProfileImg from "../../assets/icons/ProfileImg";
+import ProfileImg from "./ProfileImg";
 
 
 
@@ -18,7 +18,7 @@ export default function Navbar() {
     }
 
     return (
-        <div className="w-full h-18 flex items-center text-white justify-between bg-[#262E38]/70 backdrop-blur-md px-5">
+        <div className="w-full h-16 flex items-center text-white justify-between bg-[#151B25] backdrop-blur-md px-5 border-b border-gray-400">
             <div className="flex gap-3 pl-5 items-center">
                 <div>
                     <img src="../logo.png" alt="#logo" className="w-12 rounded-full" />
@@ -27,7 +27,7 @@ export default function Navbar() {
             </div>
 
 
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-3">
                 <div className="flex py-1 pl-2 pr-8 rounded-md border items-center" onClick={() => setOpenSearchBox(true)}>
                     <span className="material-symbols-outlined">search</span>
 
@@ -38,26 +38,27 @@ export default function Navbar() {
                     </span>
                 </div>
 
-                <div className="border rounded-md py-0.5 gap-1 px-2 border-white flex items-center">
-                    <NewAdd />
-                    <span className="material-symbols-outlined text-xl!">arrow_drop_down</span>
-                </div>
-                <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
-                    <Issue />
-                </div>
-                <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
-                    <Pull />
-                </div>
+                <div className="flex items-center gap-3">
+                    <div className="border rounded-md py-0.5 gap-1 px-2 border-white flex items-center">
+                        <NewAdd />
+                        <span className="material-symbols-outlined text-xl!">arrow_drop_down</span>
+                    </div>
+                    <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
+                        <Issue />
+                    </div>
+                    <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
+                        <Pull />
+                    </div>
 
-                <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
-                    <Repos />
-                </div>
+                    <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
+                        <Repos />
+                    </div>
 
-                <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
-                    <Notification />
-                </div>
+                    <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
+                        <Notification />
+                    </div>
 
-                <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
+                    {/* require img and onClick */}
                     <ProfileImg />
                 </div>
             </div>
