@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type JSX } from "react";
 import NewAdd from "../../assets/icons/New";
 import Issue from "../../assets/icons/Issue";
 import Pull from "../../assets/icons/Pull";
@@ -18,7 +18,7 @@ export default function Navbar() {
     }
 
     return (
-        <div className="w-full h-16 flex items-center text-white justify-between bg-[#151B25] backdrop-blur-md px-5 border-b border-gray-400">
+        <div className="w-full h-16 flex items-center text-white justify-between bg-[#151B25] backdrop-blur-md px-5 border-b border-gray-700">
             <div className="flex gap-3 pl-5 items-center">
                 <div>
                     <img src="../logo.png" alt="#logo" className="w-12 rounded-full" />
@@ -28,7 +28,7 @@ export default function Navbar() {
 
 
             <div className="flex items-center gap-3">
-                <div className="flex py-1 pl-2 pr-8 rounded-md border items-center" onClick={() => setOpenSearchBox(true)}>
+                <div className="flex py-1 pl-2 pr-8 rounded-md border items-center opacity-60 active:opacity-100" onClick={() => setOpenSearchBox(true)}>
                     <span className="material-symbols-outlined">search</span>
 
                     <span className="flex items-center gap-1 font-xs font-normal">
@@ -39,24 +39,18 @@ export default function Navbar() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="border rounded-md py-0.5 gap-1 px-2 border-white flex items-center">
+                    <div className="border rounded-md py-0.5 gap-1 px-2 border-white flex items-center opacity-60 hover:opacity-85 cursor-pointer">
                         <NewAdd />
                         <span className="material-symbols-outlined text-xl!">arrow_drop_down</span>
                     </div>
-                    <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
-                        <Issue />
-                    </div>
-                    <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
-                        <Pull />
-                    </div>
 
-                    <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
-                        <Repos />
-                    </div>
+                    <NavIconTemp icon={<Issue />} />
 
-                    <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center">
-                        <Notification />
-                    </div>
+                    <NavIconTemp icon={<Pull />} />
+
+                    <NavIconTemp icon={<Repos />} />
+
+                    <NavIconTemp icon={<Notification />} />
 
                     {/* require img and onClick */}
                     <ProfileImg />
@@ -66,6 +60,13 @@ export default function Navbar() {
     )
 }
 
+function NavIconTemp({icon}: {icon: JSX.Element}) {
+    return (
+        <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center opacity-60 hover:opacity-85 cursor-pointer">
+            { icon }
+        </div>
+    )
+}
 
 function OpenSearchBox() {
     return (
