@@ -6,9 +6,12 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch ./src/server.ts",
     "build": "tsc -b",
     "start": "node ./dist/server.js",
-    "dev": "pnpm build && pnpm start",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prebuild": "pnpm clean",
     "code": "tsx ./src/cli.ts"
   },
   "keywords": [],

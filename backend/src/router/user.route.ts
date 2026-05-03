@@ -29,7 +29,7 @@ userRouter.get("/me/followers", isAuthenticated, getMyFollowers);
 userRouter.get("/me/following", isAuthenticated, getMyFollowing);
 
 
-//Public profiles
+//Public profiles for other users
 userRouter.get("/:username", getUserByUsername)
 
 userRouter.get("/:username/followers", getUserFollowers)
@@ -38,9 +38,9 @@ userRouter.get("/:username/following", getUserFollowing)
 
 
 //Follow and Unfollow user's
-userRouter.post("/:username/follow", isAuthenticated, followUser)
+userRouter.post("/follow", isAuthenticated, followUser) //?target=amnkarn
 
-userRouter.delete("/:username/follow", isAuthenticated, unfollowUser)
+userRouter.post("/unfollow", isAuthenticated, unfollowUser) //?target=amnkarn
 
 
 export default userRouter;
