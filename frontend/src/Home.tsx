@@ -5,7 +5,7 @@ import Overview from "./components/home/Overview";
 
 export default function Home() {
     return (
-        <div className="w-full bg-[#11161D] h-250 font-inter">
+        <div className="w-full bg-[#11161D] font-inter">
             <header className="w-full fixed">
                 <Navbar />
             </header>
