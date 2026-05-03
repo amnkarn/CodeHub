@@ -1,6 +1,9 @@
 import type { Request, Response } from "express";
 import prismaClient from "../config/db.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import blackListToken from "../utils/blacklistToken.js";
+import type { jwtPayload } from "../utils/generateToken.js";
 
 
 //User Profile Management (User Controller)
@@ -13,12 +16,16 @@ export const getCurrentUser = async (req: Request, res: Response) => {
             where: {
                 id: userId
             },
-            include: {
-                followedBy: true,
-                following: true,
-                starRepos: true,
-                issues: true,
-                forks: true,
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                createdAt: true,
+                followedBy: { select: { id: true, username: true, email: true } },
+                following: { select: { id: true, username: true, email: true } },
+                starRepos: { select: { id: true, name: true } },
+                issues: { select: { id: true, title: true, status: true } },
+                forks: true
             }
         })
 
@@ -69,6 +76,12 @@ export const updateUserProfile = async (req: Request, res: Response) => {
             updateData.password = hash;
         }
 
+        if(Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                message: "Nothing to update"
+            })
+        }
+
         const updateUser = await prismaClient.user.update({
             where: {
                 id: userId,
@@ -98,6 +111,8 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 }
 
 export const deleteUserProfile = async (req: Request, res: Response) => {
+    const refreshToken = req.cookies.refreshToken;
+    const accessToken = req.cookies.accessToken;
     const userId = req.user?.id;
     if (!userId) return;
 
@@ -107,6 +122,17 @@ export const deleteUserProfile = async (req: Request, res: Response) => {
                 id: userId
             }
         })
+
+        const decodeRefreshToken = jwt.verify(refreshToken, process.env.JWT_SECRET!) as jwtPayload;
+        const decodeAccessToken = jwt.verify(accessToken, process.env.JWT_SECRET!) as jwtPayload;
+
+        //blacklist both tokens
+        blackListToken(decodeRefreshToken.jti, 604800);
+        blackListToken(decodeAccessToken.jti, 900);
+
+        res.clearCookie("refreshToken");
+        res.clearCookie("accessToken");
+
 
         res.status(200).json({
             message: "User deleted successfully"
@@ -120,7 +146,6 @@ export const deleteUserProfile = async (req: Request, res: Response) => {
     }
 }
 
-// iam followed by these users
 export const getMyFollowers = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) return;
@@ -148,14 +173,13 @@ export const getMyFollowers = async (req: Request, res: Response) => {
         })
 
     } catch (error) {
-        console.log("Error in myyFollowwers controller: ", error);
+        console.log("Error in getMyFollowers: ", error);
         res.status(500).json({
             message: "Error in server"
         })
     }
 }
 
-// iam following these users
 export const getMyFollowing = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) return;
@@ -182,7 +206,7 @@ export const getMyFollowing = async (req: Request, res: Response) => {
         })
 
     } catch (error) {
-        console.log("Error in myyFollowwers controller: ", error);
+        console.log("Error in getMyFollowing: ", error);
         res.status(500).json({
             message: "Error in server"
         })
@@ -203,14 +227,49 @@ export const getUserByUsername = async (req: Request, res: Response) => {
                 username: true,
                 email: true,
                 createdAt: true,
-                following: true,
-                followedBy: true,
-                starRepos: true,
+                following: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true
+                    }
+                },
+                followedBy: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true
+                    }
+                },
+                starRepos: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                },
+                issues: {
+                    select: {
+                        id: true,
+                        title: true,
+                        status: true
+                    }
+                },
+                repositories: {
+                    select: {
+                        id: true,
+                        name: true,
+                        description: true,
+                        visibility: true,
+                    }
+                },
                 forks: true,
-                issues: true,
-                repositories: true
             }
         })
+        if(!user) {
+            return res.status(404).json({
+                message: "User not found"
+            })
+        }
 
         res.status(200).json({
             message: "User found succeesfully",
@@ -245,13 +304,18 @@ export const getUserFollowers = async (req: Request, res: Response) => {
                 }
             }
         })
+        if(!userFollowers) {
+            return res.status(404).json({
+                message: "User not found"
+            })
+        }
 
         res.status(200).json({
             userFollowers
         })
 
     } catch (error) {
-        console.log("Error in getUserFollowers function: ", error);
+        console.log("Error in getUserFollowers: ", error);
         res.status(500).json({
             message: "Error in server"
         })
@@ -278,13 +342,18 @@ export const getUserFollowing = async (req: Request, res: Response) => {
                 }
             }
         })
+        if(!userFollowing) {
+            return res.status(404).json({
+                message: "User not found"
+            })
+        }
 
         res.status(200).json({
             userFollowing
         })
 
     } catch (error) {
-        console.log("Error in getUserFollowers function: ", error);
+        console.log("Error in getUserFollowing: ", error);
         res.status(500).json({
             message: "Error in server"
         })
@@ -298,26 +367,47 @@ export const followUser = async (req: Request, res: Response) => {
     if (!targetUsername) return;
 
     const userId = req.user?.id
-    
-    if(!targetUsername || !userId){
+
+    if (!targetUsername || !userId) {
         return res.status(400).json({
             message: "Missing required info"
         })
     }
-    
+
     try {
         //search and verify targetUsername
         const targetUser = await prismaClient.user.findUnique({
             where: { username: targetUsername }
         })
-        
-        if(!targetUser) {
+        if (!targetUser) {
             return res.status(404).json({
                 message: "Invalid user"
             })
         }
 
         const targetUserId = targetUser.id;
+        if(targetUserId === userId) {
+            return res.status(400).json({
+                message: "You can't follow yourself"
+            })
+        }
+
+        const alreadyFollowing = await prismaClient.user.findFirst({
+            where: {
+                id: userId,
+                following: {
+                    some: {
+                        id: userId
+                    }
+                }
+            },
+        })
+
+        if(alreadyFollowing) {
+            return res.status(400).json({
+                message: "Already following this user"
+            })
+        }
 
         //add targetUsername in user followed list
         await prismaClient.user.update({
@@ -337,7 +427,7 @@ export const followUser = async (req: Request, res: Response) => {
 
     } catch (error) {
         console.log("Error in followUser: ", error);
-        res.send(500).json({
+        res.status(500).json({
             message: "Internal server error"
         })
     }
@@ -348,8 +438,8 @@ export const unfollowUser = async (req: Request, res: Response) => {
     if (!targetUsername) return;
 
     const userId = req.user?.id
-    
-    if(!targetUsername || !userId){
+
+    if (!targetUsername || !userId) {
         return res.status(400).json({
             message: "Missing required info"
         })
@@ -359,13 +449,31 @@ export const unfollowUser = async (req: Request, res: Response) => {
         const targetUser = await prismaClient.user.findUnique({
             where: { username: targetUsername }
         })
-        if(!targetUser) {
+        if (!targetUser) {
             return res.status(404).json({
                 message: "Invalid user"
             })
         }
 
         const targetUserId = targetUser.id;
+
+        const isFollowing = await prismaClient.user.findFirst({
+            where: {
+                id: userId,
+                following: {
+                    some: {
+                        id: targetUserId
+                    }
+                }
+            }
+        })
+
+        if(!isFollowing) {
+            return res.status(400).json({
+                message: "You are not following this user"
+            })
+        }
+
 
         await prismaClient.user.update({
             where: {
@@ -381,10 +489,10 @@ export const unfollowUser = async (req: Request, res: Response) => {
         })
 
         return res.json({ message: "User unfollowed successfully" });
-        
+
     } catch (error) {
         console.log("Error in unfollowUser: ", error);
-        res.send(500).json({
+        res.status(500).json({
             message: "Internal server error"
         })
     }

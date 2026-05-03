@@ -1,78 +1,103 @@
-import type { ReactNode } from "react"
+
 
 
 export default function Activity() {
     return (
-        <div className="w-full pt-6">
-            <div className="text-white">
-                <h3 className="text-2xl font-bold">Dashboard</h3>
-                <p className="text-gray-400 pt-1">Platform-wide overview and live community activity</p>
+        <div className="w-full flex gap-6">
+            <CommunityActivity />
+            <TechOverview />
+        </div>
+    )
+}
+
+
+function CommunityActivity() {
+    return (
+        <div className="w-[66%]">
+            <div className="text-gray-400 flex items-center justify-between px-1 pb-4">
+                <div className="uppercase flex items-center gap-2 font-jetBrains-italic font-bold">
+                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                    <h3 className="text-[15px] tracking-wider">community</h3>
+                    <h3 className="text-[15px] tracking-wider">activity</h3>
+                </div>
+                <div className="flex items-center gap-3">
+                    <p className="text-[13px] ">All</p>
+                    <p className="text-[13px] ">users</p>
+                    <p className="w-1 h-1 bg-gray-400 rounded-full"></p>
+                    <p className="text-[13px] ">live</p>
+                </div>
             </div>
 
-            <div className="flex gap-3 py-8">
-                <ActivityBox 
-                    icon={<span className="material-symbols-outlined">import_contacts</span>} 
-                    label="Repositories"
-                    value="8"
-                    fontColor="#00BCFF"
-                    fontBgColor="#152B3A"
-                />
-                <ActivityBox 
-                    icon={<span className="material-symbols-outlined">kid_star</span>} 
-                    label="Total Stars"
-                    value="20,685"
-                    fontColor="#E3B404"
-                    fontBgColor="#2D2C22"
-                />
-                <ActivityBox 
-                    icon={<span className="material-symbols-outlined">error</span>} 
-                    label="Open Issues"
-                    value="6"
-                    fontColor="#FF6467"
-                    fontBgColor="#2E1E27"
-                />
+            <div className="rounded-xl border border-white h-20">
 
-                <ActivityBox 
-                    icon={<i className="fa-solid fa-code-fork"></i>} 
-                    label="Total Forks"
-                    value="1,851"
-                    fontColor="#A684FF"
-                    fontBgColor="#23223C"
-                />
-
-                <ActivityBox 
-                    icon={<i className="fa-solid fa-fire-flame-curved"></i>} 
-                    label="Streak"
-                    value="7d"
-                    fontColor="#FF8904"
-                    fontBgColor="#2F2422"
-                />
             </div>
         </div>
     )
 }
 
 
-interface Activity {
-    icon: ReactNode
-    label: string
-    value: string
-    fontColor: string
-    fontBgColor: string
+
+function TechOverview() {
+    return (
+        <div className="flex-1">
+            <div className="text-gray-400 flex items-center gap-2 px-1 pb-3">
+                <span className="material-symbols-outlined text-lg!">group</span>
+                <h3 className=" tracking-wider  font-jetBrains!">Developers</h3>
+            </div>
+
+            <div className="flex flex-col gap-8">
+                <Developers />
+                <Repos />
+                <Languages />
+            </div>
+        </div>
+    )
 }
 
-function ActivityBox({icon, label, value, fontColor, fontBgColor}: Activity) {
-    return (
-        <div className="flex flex-col h-35 w-55 items-start justify-between pl-4 pr-32 py-4 rounded-xl bg-[#171D26] border border-gray-700">
-            <div 
-                className="border border-gray-800 px-1.5 pt-1 rounded-md flex items-center justify-center"
-                style={{backgroundColor: fontBgColor}}
-            >
-                <p className="text-white" style={{color: fontColor}}> {icon} </p>
-            </div>
-            <h3 className="text-white text-2xl font-bold"> {value} </h3>
 
-            <p className="text-gray-400 text-xs"> {label} </p>
+function Developers() {
+    return (
+            <div className="rounded-xl border border-gray-800 pt-4 flex flex-col gap-6 bg-[#171D26]">
+            <Profile bottomBorder={true} />
+            <Profile bottomBorder={true} />
+            <Profile bottomBorder={false} />
+        </div>
+    )
+}
+
+function Profile({ bottomBorder }: { bottomBorder: boolean }) {
+    return (
+        <div className={`pb-4 px-3 ${bottomBorder ? "border-b border-gray-700" : ""}`}>
+            <DeveloperImg url="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" />
+
+            <div className="">
+
+            </div>
+        </div>
+    )
+}
+
+function DeveloperImg({ url }: { url: string }) {
+    return (
+        <div className="border w-8 h-8 rounded-full border-gray-500 bg-gray-500">
+            <img src={url} alt="#profile" className="w-8 h-8 rounded-full object-cover" />
+        </div>
+    )
+}
+
+
+function Repos() {
+    return (
+            <div className="rounded-xl border border-gray-800 h-20 bg-[#171D26]">
+
+        </div>
+    )
+}
+
+function Languages() {
+    return (
+        <div className="rounded-xl border border-gray-800 h-20 bg-[#171D26]">
+
         </div>
     )
 }

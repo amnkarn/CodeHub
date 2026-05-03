@@ -8,3 +8,24 @@
 @import url("https://cdn.jsdelivr.net/npm/@primer/octicons@19.9.0/build/build.css");
 
 @import "tailwindcss";
+
+
+
+font-face {
+    font-family: 'inter';
+    src: url(../fonts/inter-regular.ttf) format('truetype');
+}
+font-face { 
+    font-family: "jetBrains";
+    src: url(../fonts/JetBrains-Regular.ttf);
+}
+font-face { 
+    font-family: "jetBrains-italic";
+    src: url(../fonts/JetBrainsMonoNL-LightItalic.ttf);
+}
+
+@theme {
+  --font-inter: 'inter', system-ui, sans-serif;
+  --font-jetBrains: 'jetBrains', monospace;
+  --font-jetBrains-italic: 'jetBrains-italic', monospace;
+}

@@ -11,38 +11,34 @@ import {
     unstarRepository, 
     updateRepository
 } from "../controller/repo.controller.js";
+import isAuthenticated from "../middlewares/isAuthenticated.js";
 
 const repoRouter: Router = Router();
 
 
-//repo operation
+//Public Operation
 repoRouter.get("/", getRepositories);
 
-repoRouter.post("/", createRepository);
+repoRouter.get("/search", searchRepositories); //search repo
 
+repoRouter.get("/user/:username", getUserRepositories); //all repos belonging to a username
 
-// search repo
-repoRouter.get("/search", searchRepositories);
+repoRouter.get("/:owner/:repo", getRepositoryByFullName);
 
 
 //Operations for specific repo by owner and name
-repoRouter.get("/:owner/:repo", getRepositoryByFullName);
+repoRouter.post("/", isAuthenticated, createRepository);
 
-repoRouter.put("/:owner/:repo", updateRepository);
+repoRouter.put("/:owner/:repo", isAuthenticated, updateRepository);
 
-repoRouter.delete("/:owner/:repo", deleteRepository);
+repoRouter.delete("/:owner/:repo", isAuthenticated, deleteRepository);
 
-repoRouter.patch("/:owner/:repo/visibility", toggleRepositoryVisibility);
-
+repoRouter.patch("/:owner/:repo/visibility", isAuthenticated, toggleRepositoryVisibility);
 
 // Social & Interaction (Stars)
-repoRouter.post("/:owner/:repo/star", starRepository);
+repoRouter.post("/:owner/:repo/star", isAuthenticated, starRepository);
 
-repoRouter.delete("/:owner/:repo/star", unstarRepository);
-
-
-//Fetch all repos belonging to a username
-repoRouter.get("/user/:username", getUserRepositories);
+repoRouter.delete("/:owner/:repo/star", isAuthenticated, unstarRepository);
 
 
 export default repoRouter;
