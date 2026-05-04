@@ -25,6 +25,7 @@ repoRouter.get("/user/:username", getUserRepositories); //all repos belonging to
 
 repoRouter.get("/:owner/:repo", getRepositoryByFullName);
 
+//get star repo's
 
 //Operations for specific repo by owner and name
 repoRouter.post("/", isAuthenticated, createRepository);

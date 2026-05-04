@@ -13,19 +13,26 @@ model User {
   username          String          @unique
   email             String          @unique
   password          String
-  verified          Boolean         @default(false)
-  repositories      Repository[]
 
-  followedBy        User[]       @relation("UserFollows")
-  following         User[]       @relation("UserFollows")
+  //info
+  name              String?
+  avatarUrl         String?
+  xUsername         String?
+  linkdinUsername   String?
+  bio               String?
+  place             String?
+  link              String?
+  verified          Boolean         @default(false)
   
+  repositories      Repository[]
+  issues            Issue[]
+  comments          Comments[]
+  forks             Fork[]
+
   starRepos         Repository[]    @relation("UserStarredRepos")
 
-  issues            Issue[]
-
-  comments          Comments[]
-
-  forks             Fork[]
+  followedBy        User[]          @relation("UserFollows")
+  following         User[]          @relation("UserFollows")
 
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt

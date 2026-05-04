@@ -9,21 +9,21 @@ export default function Repos() {
             </div>
 
             <div className="flex flex-col gap-2">
-            <Repo 
-                heading="nexus-framework"
-                description="A lightweight, high-performance web framework for..."
-                language="TypeScript"
-                star={2847}
-                forks={312}
-            />
+                <Repo
+                    heading="nexus-framework"
+                    description="A lightweight, high-performance web framework for..."
+                    language="TypeScript"
+                    star={2847}
+                    forks={312}
+                />
 
-            <Repo 
-                heading="data-forge"
-                description="Transform, validate, and pipeline your data with an el..."
-                language="TypeScript"
-                star={934}
-                forks={87}
-            />
+                <Repo
+                    heading="data-forge"
+                    description="Transform, validate, and pipeline your data with an el..."
+                    language="TypeScript"
+                    star={934}
+                    forks={87}
+                />
             </div>
         </div>
     )
