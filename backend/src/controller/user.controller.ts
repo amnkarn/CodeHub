@@ -4,15 +4,17 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import blackListToken from "../utils/blacklistToken.js";
 import type { jwtPayload } from "../utils/generateToken.js";
-
+import { userUpdateSchema } from "../validators/userSchema.js";
+import { getUserParamsSchema } from "../validators/userSchema.js";
+import { getTargetQuerySchema } from "../validators/userSchema.js";
 
 //User Profile Management (User Controller)
 export const getCurrentUser = async (req: Request, res: Response) => {
-    const userId = req.user?.id
+    const userId = req.user?.id; //from cookies
     if (!userId) return;
 
     try {
-        const user = await prismaClient.user.findFirst({
+        const user = await prismaClient.user.findUnique({
             where: {
                 id: userId
             },
@@ -46,13 +48,19 @@ export const updateUserProfile = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) return;
 
+    const parsedData = userUpdateSchema.safeParse(req.body);
+    if (!parsedData.success) {
+        return res.status(400).json({
+            message: "Something is wrong"
+        })
+    }
+
     try {
-        //can change username, password
+        //can change username, email, password
         const updateData: any = {};
+        const { username, email, password } = parsedData.data;
 
-        if (req.body.username) {
-            const username = req.body.username;
-
+        if (username) {
             //check username availability
             const user = await prismaClient.user.findUnique({
                 where: {
@@ -67,9 +75,21 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 
             updateData.username = username;
         }
+        if(email) {
+            //cheak avilability
+            const user = await prismaClient.user.findUnique({
+                where: {email: email}
+            })
+            if(user) {
+                return res.status(404).json({
+                    message: `Email ${email} is already in use. Please choose another`
+                })
+            }
 
-        if (req.body.password) {
-            const pass = req.body.password;
+            updateData.email = email;
+        }
+        if (password) {
+            const pass = password;
             const salt = await bcrypt.genSalt(5);
             const hash = await bcrypt.hash(pass, salt);
 
@@ -113,7 +133,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 export const deleteUserProfile = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
     const accessToken = req.cookies.accessToken;
-    const userId = req.user?.id;
+    const userId = req.user?.id; //from cookies
     if (!userId) return;
 
     try {
@@ -152,7 +172,7 @@ export const getMyFollowers = async (req: Request, res: Response) => {
 
     try {
         //following me
-        const user = await prismaClient.user.findFirst({
+        const user = await prismaClient.user.findUnique({
             where: {
                 id: userId
             },
@@ -185,7 +205,7 @@ export const getMyFollowing = async (req: Request, res: Response) => {
     if (!userId) return;
 
     try {
-        const user = await prismaClient.user.findFirst({
+        const user = await prismaClient.user.findUnique({
             where: {
                 id: userId
             },
@@ -216,12 +236,19 @@ export const getMyFollowing = async (req: Request, res: Response) => {
 
 //Public profile controller
 export const getUserByUsername = async (req: Request, res: Response) => {
-    const { username } = req.params;
+    const result = getUserParamsSchema.safeParse(req.params);
+    if(!result.success) {
+        return res.status(400).json({
+            message: "Invalid ID formate"
+        })
+    }
+
+    const { username } = result.data;
 
     try {
         const user = await prismaClient.user.findUnique({
             where: {
-                username: username as string
+                username: username
             },
             select: {
                 username: true,
@@ -285,10 +312,16 @@ export const getUserByUsername = async (req: Request, res: Response) => {
 }
 
 export const getUserFollowers = async (req: Request, res: Response) => {
-    const username = req.params.username;
-    if (!username) return;
+    const parsedParams = getUserParamsSchema.safeParse(req.params);
+    if(!parsedParams.success) {
+        return res.status(400).json({
+            message: "Invalid ID formate"
+        })
+    }
 
     try {
+        const username = parsedParams.data.username;
+
         const userFollowers = await prismaClient.user.findUnique({
             where: {
                 username: username as string
@@ -323,8 +356,14 @@ export const getUserFollowers = async (req: Request, res: Response) => {
 }
 
 export const getUserFollowing = async (req: Request, res: Response) => {
-    const username = req.params.username;
-    if (!username) return;
+    const params = getUserParamsSchema.safeParse(req.params);
+    if(!params.success) {
+        return res.status(400).json({
+            message: "Invalid ID formate"
+        })
+    }
+
+    const username = params.data.username;
 
     try {
         const userFollowing = await prismaClient.user.findUnique({
@@ -363,10 +402,15 @@ export const getUserFollowing = async (req: Request, res: Response) => {
 
 //Follow and Unfollow user's
 export const followUser = async (req: Request, res: Response) => {
-    const targetUsername = req.query.target as string;
-    if (!targetUsername) return;
-
-    const userId = req.user?.id
+    const query = getTargetQuerySchema.safeParse(req.query);
+    if(!query.success) {
+        return res.status(400).json({
+            message: "Invalid query params"
+        })
+    }
+    
+    const targetUsername = query.data.target;
+    const userId = req.user?.id;
 
     if (!targetUsername || !userId) {
         return res.status(400).json({
@@ -397,7 +441,7 @@ export const followUser = async (req: Request, res: Response) => {
                 id: userId,
                 following: {
                     some: {
-                        id: userId
+                        id: targetUser.id
                     }
                 }
             },
@@ -434,9 +478,14 @@ export const followUser = async (req: Request, res: Response) => {
 }
 
 export const unfollowUser = async (req: Request, res: Response) => {
-    const targetUsername = req.query.target as string;
-    if (!targetUsername) return;
+    const query = getTargetQuerySchema.safeParse(req.query);
+    if(!query.success) {
+        return res.status(400).json({
+            message: "Invalid query params"
+        })
+    }
 
+    const targetUsername = query.data.target;
     const userId = req.user?.id
 
     if (!targetUsername || !userId) {
