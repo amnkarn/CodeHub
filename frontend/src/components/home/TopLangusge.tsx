@@ -40,7 +40,10 @@ function Language({language, repos, levelWidth}: {language: string, repos: numbe
                 <p className="text-gray-500 text-[13px]!">{repos} repos</p>
             </div>
             <div className="mt-2 w-full rounded-2xl bg-[#1F252E]">
-                <div className={`w-[${levelWidth}%] h-full rounded-2xl bg-[#0DA2E7] pt-1.5`}></div>
+                <div 
+                    className={`h-full rounded-2xl bg-[#0DA2E7] pt-1.5`} 
+                    style={{width: `${levelWidth}%`}}>
+                </div>
             </div>
         </div>
     )

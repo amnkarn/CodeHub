@@ -28,7 +28,7 @@ export default function Navbar() {
 
 
             <div className="flex items-center gap-3">
-                <div className="flex py-1 pl-2 pr-8 rounded-md border items-center opacity-60 active:opacity-100" onClick={() => setOpenSearchBox(true)}>
+                <div className="flex py-1 pl-2 pr-8 rounded-md border border-gray-600 items-center opacity-60 active:opacity-100" onClick={() => setOpenSearchBox(true)}>
                     <span className="material-symbols-outlined">search</span>
 
                     <span className="flex items-center gap-1 font-xs font-normal">
@@ -39,7 +39,7 @@ export default function Navbar() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="border rounded-md py-0.5 gap-1 px-2 border-white flex items-center opacity-60 hover:opacity-85 cursor-pointer">
+                    <div className="rounded-md py-0.5 gap-1 px-2 border border-gray-600 flex items-center opacity-60 hover:opacity-85 cursor-pointer">
                         <NewAdd />
                         <span className="material-symbols-outlined text-xl!">arrow_drop_down</span>
                     </div>
@@ -62,7 +62,7 @@ export default function Navbar() {
 
 function NavIconTemp({icon}: {icon: JSX.Element}) {
     return (
-        <div className="border rounded-md py-2 gap-1 px-2 border-white flex items-center opacity-60 hover:opacity-85 cursor-pointer">
+        <div className="border border-gray-600 rounded-md py-2 gap-1 px-2 flex items-center opacity-60 hover:opacity-85 cursor-pointer">
             { icon }
         </div>
     )
