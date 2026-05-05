@@ -22,12 +22,17 @@ export const getCurrentUser = async (req: Request, res: Response) => {
                 id: true,
                 username: true,
                 email: true,
+                name: true,
                 createdAt: true,
-                followedBy: { select: { id: true, username: true, email: true } },
-                following: { select: { id: true, username: true, email: true } },
-                starRepos: { select: { id: true, name: true } },
-                issues: { select: { id: true, title: true, status: true } },
-                forks: true
+                _count: { //return counts instead of full data
+                    select: {
+                        followedBy: true,
+                        following: true,
+                        starRepos: true,
+                        issues: true,
+                        forks: true
+                    }
+                }
             }
         })
 
@@ -58,7 +63,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
     try {
         //can change username, email, password
         const updateData: any = {};
-        const { username, email, password } = parsedData.data;
+        const { username, email, name, password } = parsedData.data;
 
         if (username) {
             //check username availability
@@ -95,6 +100,9 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 
             updateData.password = hash;
         }
+        if(name) {
+            updateData.name = name;
+        }
 
         if(Object.keys(updateData).length === 0) {
             return res.status(400).json({
@@ -111,6 +119,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
                 id: true,
                 username: true,
                 email: true,
+                name: true,
                 createdAt: true,
                 updatedAt: true
             }
@@ -182,6 +191,7 @@ export const getMyFollowers = async (req: Request, res: Response) => {
                         id: true,
                         username: true,
                         email: true,
+                        name: true,
                         createdAt: true
                     }
                 }
@@ -215,6 +225,7 @@ export const getMyFollowing = async (req: Request, res: Response) => {
                         id: true,
                         username: true,
                         email: true,
+                        name: true,
                         createdAt: true
                     }
                 }
@@ -253,6 +264,7 @@ export const getUserByUsername = async (req: Request, res: Response) => {
             select: {
                 username: true,
                 email: true,
+                name: true,
                 createdAt: true,
                 following: {
                     select: {
@@ -331,6 +343,7 @@ export const getUserFollowers = async (req: Request, res: Response) => {
                     select: {
                         id: true,
                         username: true,
+                        name: true,
                         email: true,
                         createdAt: true
                     }
@@ -376,6 +389,7 @@ export const getUserFollowing = async (req: Request, res: Response) => {
                         id: true,
                         username: true,
                         email: true,
+                        name: true,
                         createdAt: true
                     }
                 }
@@ -421,7 +435,8 @@ export const followUser = async (req: Request, res: Response) => {
     try {
         //search and verify targetUsername
         const targetUser = await prismaClient.user.findUnique({
-            where: { username: targetUsername }
+            where: { username: targetUsername },
+            select: { id: true }
         })
         if (!targetUser) {
             return res.status(404).json({
@@ -436,24 +451,22 @@ export const followUser = async (req: Request, res: Response) => {
             })
         }
 
-        const alreadyFollowing = await prismaClient.user.findFirst({
-            where: {
-                id: userId,
+        const alreadyFollowing = await prismaClient.user.findUnique({
+            where: { id: userId },
+            select: {
                 following: {
-                    some: {
-                        id: targetUser.id
-                    }
+                    where: { id: targetUserId },
+                    select: { id: true }
                 }
-            },
+            }
         })
 
-        if(alreadyFollowing) {
+        if((alreadyFollowing?.following?.length ?? 0) > 0) {
             return res.status(400).json({
                 message: "Already following this user"
             })
         }
 
-        //add targetUsername in user followed list
         await prismaClient.user.update({
             where: {
                 id: userId,
@@ -496,7 +509,8 @@ export const unfollowUser = async (req: Request, res: Response) => {
 
     try {
         const targetUser = await prismaClient.user.findUnique({
-            where: { username: targetUsername }
+            where: { username: targetUsername },
+            select: { id: true },
         })
         if (!targetUser) {
             return res.status(404).json({

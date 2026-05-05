@@ -2,9 +2,11 @@ import { Router } from "express";
 import { 
     createRepository,
     deleteRepository,
-    getRepositories,
+    getMyRepositories,
+    getMyStarredRepos,
     getRepositoryByFullName,
     getUserRepositories, 
+    getUserStarredRepos, 
     searchRepositories, 
     starRepository, 
     toggleRepositoryVisibility, 
@@ -17,17 +19,20 @@ const repoRouter: Router = Router();
 
 
 //Public Operation
-repoRouter.get("/", getRepositories);
-
-repoRouter.get("/search", searchRepositories); //search repo
+repoRouter.get("/search", searchRepositories); //search all public repo(user pagination)
 
 repoRouter.get("/user/:username", getUserRepositories); //all repos belonging to a username
 
+repoRouter.get("/user/:username/starred", getUserStarredRepos); // starred repos of a user
+
 repoRouter.get("/:owner/:repo", getRepositoryByFullName);
 
-//get star repo's
 
 //Operations for specific repo by owner and name
+repoRouter.get("/me", isAuthenticated, getMyRepositories);
+
+repoRouter.get("/me/starred", isAuthenticated, getMyStarredRepos);
+
 repoRouter.post("/", isAuthenticated, createRepository);
 
 repoRouter.put("/:owner/:repo", isAuthenticated, updateRepository);
@@ -35,6 +40,7 @@ repoRouter.put("/:owner/:repo", isAuthenticated, updateRepository);
 repoRouter.delete("/:owner/:repo", isAuthenticated, deleteRepository);
 
 repoRouter.patch("/:owner/:repo/visibility", isAuthenticated, toggleRepositoryVisibility);
+
 
 // Social & Interaction (Stars)
 repoRouter.post("/:owner/:repo/star", isAuthenticated, starRepository);

@@ -17,7 +17,7 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     try {
-        const { username, email, password } = parsedData.data;
+        const { username, email, name, password } = parsedData.data;
         
         const findUser = await prismaClient.user.findUnique({
             where: {
@@ -39,6 +39,7 @@ export const registerUser = async (req: Request, res: Response) => {
             data: {
                 username,
                 email,
+                name,
                 password: hash
             }
         })
@@ -50,6 +51,7 @@ export const registerUser = async (req: Request, res: Response) => {
             data: {
                 username: user.username,
                 email: user.email,
+                name: user.email,
                 verified: false,
             }
         })

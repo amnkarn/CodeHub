@@ -14,5 +14,6 @@ export const getTargetQuerySchema = z.object({
 export const userUpdateSchema = z.object({
     username: z.string().min(5).optional(),
     email: z.email().optional(),
+    name: z.string(),
     password: z.string().min(5).optional(),
 })
