@@ -1,5 +1,5 @@
-import type { Request, Response } from "express";
-import { createRepoSchema, repoByNameSchema, usernameParamSchema } from "../validators/repoSchema.js";
+import { response, type Request, type Response } from "express";
+import { createRepoSchema, repoByNameSchema, updateRepoSchema, usernameParamSchema } from "../validators/repoSchema.js";
 import prismaClient from "../config/db.js";
 import { VISIBILITY } from "../generated/prisma/enums.js";
 
@@ -99,6 +99,7 @@ export const getUserStarredRepos = async (req: Request, res: Response) => { //sh
     }
 }
 
+//return's single repo using repo name 
 export const getRepositoryByFullName = async (req: Request, res: Response) => {
     const parseNames = repoByNameSchema.safeParse(req.params);
     if(!parseNames.success) {
@@ -118,7 +119,8 @@ export const getRepositoryByFullName = async (req: Request, res: Response) => {
             select: {
                 repositories: {
                     where: {
-                        name: repoName
+                        name: repoName,
+                        visibility: VISIBILITY.public //return only public repo's
                     },
                     select: {
                         name: true,
@@ -136,6 +138,12 @@ export const getRepositoryByFullName = async (req: Request, res: Response) => {
                 }
             }
         })
+
+        if(userRepo?.repositories.length === 0) {
+            return res.status(200).json({
+                message: "User doesn't have any repo with this name"
+            })
+        }
 
         res.status(200).json({
             message: "Repository searched successfully",
@@ -191,8 +199,42 @@ export const getMyRepositories = async (req: Request, res: Response) => {
     }
 }
 
-export const getMyStarredRepos = (req: Request, res: Response) => {
+export const getMyStarredRepos = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
 
+    try {
+        const userStarredReopos = await prismaClient.user.findUnique({
+            where: { id: (userId as string) },
+            select: {
+                starRepos: {
+                    select: {
+                        name: true,
+                        description: true,
+                        _count: {
+                            select: {
+                                staredBy: true,
+                                fork: true,
+                                issues: true
+                            }
+                        },
+                        createdAt: true,
+                        updatedAt: true
+                    }
+                }
+            }
+        })
+        
+        res.status(200).json({
+            message: "User's all starred repositories fetched successfully",
+            userStarredReopos
+        })
+        
+    } catch (error) {
+        console.log("Error in getMyStarredRepos: ", error);
+        res.status(500).json({
+            message: "Error in server"
+        })
+    }
 }
 
 export const createRepository = async (req: Request, res: Response) => {
@@ -228,8 +270,83 @@ export const createRepository = async (req: Request, res: Response) => {
     }
 }
 
-export const updateRepository = (req: Request, res: Response) => {
-    console.log("req reached");;
+export const updateRepository =async (req: Request, res: Response) => {
+    const parseNames = repoByNameSchema.safeParse(req.params);
+    if(!parseNames.success) {
+        return res.status(400).json({
+            message: "please provide the correct parameters"
+        })
+    }
+
+    const parsedBodyData = updateRepoSchema.safeParse(req.body);
+    if(!parsedBodyData.success) {
+        return res.status(400).json({
+            message: "please enter the correct value"
+        })
+    }
+
+    try {
+        const owenrname = parseNames.data.owner;
+        const repoName = parseNames.data.repo;
+
+        // create the update object
+        let { name, description, visibility } = parsedBodyData.data;
+        let updateData: any = {};
+
+        if(name) {
+            updateData.name = name;
+        }
+        if(description) {
+            updateData.description = description;
+        }
+        if(visibility) {
+            updateData.visibility = visibility;
+        }
+
+        //find the owner id
+        const owner = await prismaClient.user.findUnique({
+            where: { username: owenrname }
+        })
+
+        if(!owner) {
+            return res.status(404).json({
+                message: "Owner not found"
+            })
+        }
+        if (owner.id !== req.user?.id) {
+            return res.status(403).json({ 
+                message: "You are not the owner of this repo" 
+            })
+        }
+        if(Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                message: "Nothing to update"
+            })
+        }
+
+        const updateRepo = await prismaClient.repository.update({
+            where: {
+                //repo name in user's account is unique,
+                //so find using it
+                name_ownerId: {
+                    name: repoName,
+                    ownerId: owner.id
+                }
+            },
+            data: updateData
+        })
+
+        res.status(200).json({
+            message: "Repository updated successfully",
+            updateRepo
+        })
+
+    } catch (error) {
+        console.log("Error in updateRepository: ", error);
+        res.status(500).json({
+            message: "Error in server"
+        })
+    }
 }
 
 export const deleteRepository = (req: Request, res: Response) => {
