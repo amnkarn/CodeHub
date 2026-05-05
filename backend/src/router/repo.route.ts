@@ -18,22 +18,22 @@ import isAuthenticated from "../middlewares/isAuthenticated.js";
 const repoRouter: Router = Router();
 
 
-//Public Operation
+repoRouter.post("/", isAuthenticated, createRepository);
+
 repoRouter.get("/search", searchRepositories); //search all public repo(user pagination)
 
-repoRouter.get("/user/:username", getUserRepositories); //all repos belonging to a username
-
-repoRouter.get("/user/:username/starred", getUserStarredRepos); // starred repos of a user
-
-repoRouter.get("/:owner/:repo", getRepositoryByFullName);
-
-
-//Operations for specific repo by owner and name
 repoRouter.get("/me", isAuthenticated, getMyRepositories);
 
 repoRouter.get("/me/starred", isAuthenticated, getMyStarredRepos);
 
-repoRouter.post("/", isAuthenticated, createRepository);
+repoRouter.get("/:username", getUserRepositories); //all repos of user
+
+repoRouter.get("/:username/starred", getUserStarredRepos); // starred repos of a user
+
+
+
+// user's specific repositories operations
+repoRouter.get("/:owner/:repo", getRepositoryByFullName);
 
 repoRouter.put("/:owner/:repo", isAuthenticated, updateRepository);
 

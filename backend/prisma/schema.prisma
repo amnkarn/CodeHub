@@ -38,12 +38,16 @@ model User {
   updatedAt         DateTime        @updatedAt
 }
 
+enum VISIBILITY {
+  public
+  private
+}
 
 model Repository {
   id                String          @id       @default(uuid())
   name              String
   description       String
-  visibility        Boolean         @default(true)
+  visibility        VISIBILITY      @default(public)
   issues            Issue[]    
 
   owner             User            @relation(fields: [ownerId], references: [id])
