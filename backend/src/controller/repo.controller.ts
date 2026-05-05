@@ -1,5 +1,5 @@
 import { response, type Request, type Response } from "express";
-import { createRepoSchema, repoByNameSchema, updateRepoSchema, usernameParamSchema } from "../validators/repoSchema.js";
+import { createRepoSchema, repoByNameSchema, toggleVisibilitySchema, updateRepoSchema, usernameParamSchema } from "../validators/repoSchema.js";
 import prismaClient from "../config/db.js";
 import { VISIBILITY } from "../generated/prisma/enums.js";
 
@@ -290,7 +290,7 @@ export const updateRepository =async (req: Request, res: Response) => {
         const repoName = parseNames.data.repo;
 
         // create the update object
-        let { name, description, visibility } = parsedBodyData.data;
+        let { name, description } = parsedBodyData.data;
         let updateData: any = {};
 
         if(name) {
@@ -298,9 +298,6 @@ export const updateRepository =async (req: Request, res: Response) => {
         }
         if(description) {
             updateData.description = description;
-        }
-        if(visibility) {
-            updateData.visibility = visibility;
         }
 
         //find the owner id
@@ -349,12 +346,116 @@ export const updateRepository =async (req: Request, res: Response) => {
     }
 }
 
-export const deleteRepository = (req: Request, res: Response) => {
-    console.log("req reached");;
+export const deleteRepository = async (req: Request, res: Response) => {
+    const parseNames = repoByNameSchema.safeParse(req.params);
+    if(!parseNames.success) {
+        return res.status(400).json({
+            message: "please provide the correct parameters"
+        })
+    }
+
+    try {
+        const owenrname = parseNames.data.owner;
+        const repoName = parseNames.data.repo;
+
+        //find the owner id
+        const owner = await prismaClient.user.findUnique({
+            where: { username: owenrname }
+        })
+
+        if(!owner) {
+            return res.status(404).json({
+                message: "Owner not found"
+            })
+        }
+        if (owner.id !== req.user?.id) {
+            return res.status(403).json({ 
+                message: "You are not the owner of this repo" 
+            })
+        }
+
+        const deleteRepo = await prismaClient.repository.delete({
+            where: {
+                name_ownerId: {
+                    name: repoName,
+                    ownerId: owner.id
+                }
+            }
+        })
+
+        res.status(200).json({
+            message: "Repository deleted successfully",
+            deleteRepo
+        })
+
+    } catch (error) {
+        console.log("Error in deleteRepository: ", error);
+        res.status(500).json({
+            message: "Error in server"
+        })
+    }
 }
 
-export const toggleRepositoryVisibility = (req: Request, res: Response) => {
-    console.log("req reached");;
+export const toggleRepositoryVisibility = async (req: Request, res: Response) => {
+    const parseNames = repoByNameSchema.safeParse(req.params);
+    if(!parseNames.success) {
+        return res.status(400).json({
+            message: "please provide the correct parameters"
+        })
+    }
+
+    const visibility =  toggleVisibilitySchema.safeParse(req.body);
+    console.log(visibility)
+    if(!visibility.success) {
+        return res.status(400).json({
+            message: "Invalid body data"
+        })
+    }
+
+    try {
+        const owenrname = parseNames.data.owner;
+        const repoName = parseNames.data.repo;
+
+        //find the owner id
+        const owner = await prismaClient.user.findUnique({
+            where: { username: owenrname }
+        })
+
+        if(!owner) {
+            return res.status(404).json({
+                message: "Owner not found"
+            })
+        }
+        if (owner.id !== req.user?.id) {
+            return res.status(403).json({ 
+                message: "You are not the owner of this repo" 
+            })
+        }
+
+        const visibilityData = visibility.data.visibility;
+
+        await prismaClient.repository.update({
+            where: {
+                name_ownerId: {
+                    name: repoName,
+                    ownerId: owner.id
+                }
+            },
+            data: {
+                visibility: visibilityData
+            } 
+        })
+
+        res.status(200).json({
+            message: `Repository is now ${visibilityData}`
+        })
+        
+    } catch (error) {
+        console.log("Error in toggleRepositoryVisibility: ", error);
+        res.status(500).json({
+            message: "Error in server"
+        })
+    }
 }
 
 

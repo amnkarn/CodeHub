@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const usernameParamSchema = z.object({
     username: z.string()
-        .min(5)
+        .min(3)
         .max(15)
 })
 
@@ -24,7 +24,8 @@ export const repoByNameSchema = z.object({
 export const updateRepoSchema = z.object({
     name: z.string().optional(),
     description: z.string().optional(),
+})
+
+export const toggleVisibilitySchema = z.object({
     visibility: z.enum(['public', 'private'])
-        .default('public')
-        .optional(),
 })
