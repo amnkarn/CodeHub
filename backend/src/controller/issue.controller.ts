@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createIssueSchema, issueByIdSchema, issueParams } from "../validators/issueSchema.js";
+import { createIssueSchema, issueByIdSchema, issueParams, issueUpdateSchema } from "../validators/issueSchema.js";
 import prismaClient from "../config/db.js";
 import { VISIBILITY } from "../generated/prisma/enums.js";
 
@@ -162,6 +162,15 @@ export const getIssueById = async (req: Request, res: Response) => {
                         { ownerId:  (userId as string) },
                     ]
                 }
+            },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                status: true,
+                repository: { select: { name: true } },
+                author: { select: { username: true } },
+                createdAt: true
             }
         })
 
@@ -185,13 +194,125 @@ export const getIssueById = async (req: Request, res: Response) => {
 }
 
 export const updateIssue = async (req: Request, res: Response) => {
-    console.log("req reached to updateIssue")
+    const userId = req.user?.id;
+    if(!userId) return;
 
+    const parsedParams = issueByIdSchema.safeParse(req.params);
+    if(!parsedParams.success) {
+        return res.status(400).json({
+            message: "Invalid parameters"
+        })
+    }
+
+    const parsedData = issueUpdateSchema.safeParse(req.body);
+    if(!parsedData.success) {
+        return res.status(400).json({
+            message: "Invalid input data"
+        })
+    }
+
+    try {
+        const { issueId, owner, repo } = parsedParams.data;
+        let updateData: any = {};
+
+        const { title, description, status } = parsedData.data;
+        if(title) {
+            updateData.title = title;
+        }
+        if(description) {
+            updateData.description = description;
+        }
+        if(status) {
+            updateData.status = status;
+        }
+
+        if(Object.keys(updateData).length === 0) { //empty body handling
+            return res.status(400).json({
+                message: "Nothing to update"
+            })
+        }
+
+        const updateIssue = await prismaClient.issue.update({
+            where: {
+                id: issueId,
+                repository: {
+                    name: repo,
+                    owner: {
+                        username: owner
+                    }
+                },
+                OR: [ //author and repo owner both can update the issue
+                    { authorId: userId },
+                    { repository: { owner: { username: owner } } }
+                ]
+            },
+            data: updateData,
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                status: true,
+                repository: { select: { name: true } },
+                author: { select: { username: true } },
+                createdAt: true
+            }
+        })
+
+        res.status(200).json({
+            message: "Issue updated successfully",
+            updateIssue
+        })
+
+    } catch (error: any) {
+        if(error.code === 'P2025') {
+            return res.status(404).json({ message: "Issue not found or unauthorized" })
+        }
+        res.status(500).json({ message: "Error in server" })
+    }
 }
 
 export const deleteIssue = async (req: Request, res: Response) => {
-    console.log("req reached to deleteIssue")
+    const userId = req.user?.id;
+    if(!userId) return;
 
+    const parsedParams = issueByIdSchema.safeParse(req.params);
+    if(!parsedParams.success) {
+        return res.status(400).json({
+            message: "Invalid parameters"
+        })
+    }
+
+    try {
+        const { issueId, owner, repo } = parsedParams.data;
+
+        //only repo owner can delete the issue
+        const deleteIssue = await prismaClient.issue.delete({
+            where: {
+                id: issueId,
+                repository: {
+                    name: repo,
+                    owner: {
+                        username: owner,
+                        id: userId
+                    }
+                }
+            }
+        })
+        if(!deleteIssue) {
+            return res.status(400).json({
+                message: "Something went wrong"
+            })
+        }
+
+        res.status(200).json({
+            message: "Issue deleted successfully",
+            deleteIssue
+        })
+
+    } catch (error: any) {
+        console.log("Error in deleteIssue: ", error);
+        res.status(500).json({ message: "Error in server" })
+    }
 }
 
 

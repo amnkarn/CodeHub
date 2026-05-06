@@ -16,3 +16,9 @@ export const issueByIdSchema = z.object({
     repo: z.string().max(30),
     issueId: z.string().uuid("Invalid issue id")
 })
+
+export const issueUpdateSchema = z.object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+    status: z.enum(['open', 'closed', 'assigned']).optional()
+})

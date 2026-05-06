@@ -22,9 +22,9 @@ issueRouter.get("/:owner/:repo/issues", optionalAuth, getAllIssuesByRepo);
 
 issueRouter.get("/:owner/:repo/issues/:issueId", optionalAuth, getIssueById);
 
-issueRouter.patch("/:owner/:repo/issues/:issueId", updateIssue);
+issueRouter.patch("/:owner/:repo/issues/:issueId", isAuthenticated, updateIssue);
 
-issueRouter.delete("/:owner/:repo/issues/:issueId", deleteIssue);
+issueRouter.delete("/:owner/:repo/issues/:issueId", isAuthenticated, deleteIssue);
 
 
 //my issues
