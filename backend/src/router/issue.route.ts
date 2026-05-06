@@ -9,16 +9,18 @@ import {
     updateIssue, 
     updateMyIssuesById 
 } from "../controller/issue.controller.js";
+import isAuthenticated from "../middlewares/isAuthenticated.js";
+import optionalAuth from "../middlewares/optionalAuth.js";
 
 
 const issueRouter: Router = Router();
 
 //user's issues
-issueRouter.post("/:owner/:repo/issues", createIssue);
+issueRouter.post("/:owner/:repo/issues", isAuthenticated, createIssue);
 
-issueRouter.get("/:owner/:repo/issues", getAllIssuesByRepo);
+issueRouter.get("/:owner/:repo/issues", optionalAuth, getAllIssuesByRepo);
 
-issueRouter.get("/:owner/:repo/issues/:issueId", getIssueById);
+issueRouter.get("/:owner/:repo/issues/:issueId", optionalAuth, getIssueById);
 
 issueRouter.patch("/:owner/:repo/issues/:issueId", updateIssue);
 
