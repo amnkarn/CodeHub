@@ -29,3 +29,7 @@ export const updateRepoSchema = z.object({
 export const toggleVisibilitySchema = z.object({
     visibility: z.enum(['public', 'private'])
 })
+
+export const searchSchema = z.object({
+    input: z.string().max(50)
+})

@@ -1,12 +1,85 @@
-import { response, type Request, type Response } from "express";
-import { createRepoSchema, repoByNameSchema, toggleVisibilitySchema, updateRepoSchema, usernameParamSchema } from "../validators/repoSchema.js";
+import { type Request, type Response } from "express";
+import { createRepoSchema, repoByNameSchema, searchSchema, toggleVisibilitySchema, updateRepoSchema, usernameParamSchema } from "../validators/repoSchema.js";
 import prismaClient from "../config/db.js";
 import { VISIBILITY } from "../generated/prisma/enums.js";
 
 
 //Public Operations
-export const searchRepositories = (req: Request, res: Response) => { //search repo's
-    console.log("req reached");;
+export const searchRepositories = async (req: Request, res: Response) => { //search repo's
+    const parseParamsInput = searchSchema.safeParse(req.query);
+    if(!parseParamsInput.success) {
+        return res.status(400).json({
+            message: "Query is invalid"
+        })
+    }
+
+    try {
+        const userInput = parseParamsInput.data.input;
+
+        const result = await prismaClient.repository.findMany({
+            where: {
+                visibility: VISIBILITY.public, //should be public
+                OR: [
+                    { name: { contains: userInput, mode: 'insensitive' } },
+                    { description: { contains: userInput, mode: 'insensitive' } },
+                    //{
+                    //    issues: {
+                    //        some: {
+                    //            OR: [
+                    //                {
+                    //                    title: {
+                    //                        contains: userInput,
+                    //                        mode: 'insensitive'
+                    //                    },
+                    //                },
+                    //                {
+                    //                    description: {
+                    //                        contains: userInput,
+                    //                        mode: 'insensitive'
+                    //                    }
+                    //                }
+                    //            ]
+                    //        },
+                    //    }
+                    //}
+                ]
+            },
+            select: {
+                name: true,
+                description: true,
+                visibility: true,
+                owner: {
+                    select: {
+                        username: true
+                    }
+                },
+                _count: {
+                    select: {
+                        staredBy: true,
+                        fork: true
+                    }
+                },
+                createdAt: true
+            }
+        })
+        if(result.length === 0) {
+            return res.status(200).json({
+                message: `There is nothing with name ${userInput}`
+            })
+        }
+
+        res.status(200).json({
+            message: "Repo's find successfully",
+            result
+        })
+        
+    } catch (error) {
+        console.log("Error in searchRepositories: ", error);
+        res.status(500).json({
+            message: "Error in repositories searching"
+        })
+    }
+
 }
 
 export const getUserRepositories = async (req: Request, res: Response) => { //all repos of user
@@ -164,7 +237,6 @@ export const getRepositoryByFullName = async (req: Request, res: Response) => {
 }
 
 
-
 //Authenticated Operations
 export const getMyRepositories = async (req: Request, res: Response) => {
     const userId = req.user?.id;
@@ -177,6 +249,7 @@ export const getMyRepositories = async (req: Request, res: Response) => {
                     select: {
                         name: true,
                         description: true,
+                        visibility: true,
                         _count: {
                             select: {
                                 staredBy: true,

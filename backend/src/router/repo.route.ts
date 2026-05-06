@@ -20,6 +20,7 @@ const repoRouter: Router = Router();
 
 repoRouter.post("/", isAuthenticated, createRepository);
 
+//route => http://localhost:3000/api/v1/repo/search?input=test
 repoRouter.get("/search", searchRepositories); //search all public repo(user pagination)
 
 repoRouter.get("/me", isAuthenticated, getMyRepositories);
