@@ -41,6 +41,11 @@ export const getUserRepositories = async (req: Request, res: Response) => { //al
                 }
             }
         })
+        if(!userAllRepos) {
+            return res.status(404).json({
+                message: "User not found"
+            })
+        }
 
         res.status(200).json({
             message: "Repository fetched successfully",
@@ -93,7 +98,7 @@ export const getUserStarredRepos = async (req: Request, res: Response) => { //sh
 
     } catch (error) {
         console.log("Error in getUserStarredRepos: ", error);
-        res.send(500).json({
+        res.status(500).json({
             message: "Something wrong in server"
         })
     }
@@ -388,11 +393,12 @@ export const deleteRepository = async (req: Request, res: Response) => {
             deleteRepo
         })
 
-    } catch (error) {
+    } catch (error: any) {
         console.log("Error in deleteRepository: ", error);
-        res.status(500).json({
-            message: "Error in server"
-        })
+        if (error.code === 'P2025') { //Prisma's "record not found" error code
+            return res.status(404).json({ message: "Repo not found" })
+        }
+        throw error
     }
 }
 
@@ -460,12 +466,146 @@ export const toggleRepositoryVisibility = async (req: Request, res: Response) =>
 
 
 // start and unstart the repo
-export const starRepository = (req: Request, res: Response) => {
-    console.log("req reached");;
+export const starRepository = async (req: Request, res: Response) => {
+    const parseNames = repoByNameSchema.safeParse(req.params);
+    if(!parseNames.success) {
+        return res.status(400).json({
+            message: "please provide the correct parameters"
+        })
+    }
+
+    const userId = req.user?.id;
+    if(!userId) {
+        return res.status(400).json({ message: "Can't find user's id" })
+    }
+
+    //add this owner's repo in logged in user's starred array
+    try {
+        const owenrname = parseNames.data.owner;
+        const repoName = parseNames.data.repo;
+
+        const targetRepo = await prismaClient.repository.findFirst({
+            where: {
+                //match the repo and owner's name
+                name: repoName,
+                owner: {
+                    username: owenrname,
+                }
+            },
+            select: {
+                id: true,
+                ownerId: true,
+                staredBy: {
+                    where: { id: userId }, //starred by the logged in user
+                    select: { id: true }
+                }
+            }
+        })
+
+        if(!targetRepo) {
+            return res.status(404).json({
+                message: "Repo not found"
+            })
+        }
+
+        if(targetRepo.staredBy.length > 0) {
+            return res.status(400).json({
+                message: "Already starred this repo"
+            })
+        }
+
+        await prismaClient.user.update({ //add
+            where: { id: userId },
+            data: {
+                starRepos: {
+                    connect: {
+                        id: targetRepo.id
+                    }
+                }
+            }
+        })
+
+        res.status(200).json({
+            message: "Successfully added to starred"
+        })
+
+    } catch (error) {
+        console.log("Error in startRepository: ", error);
+        res.status(500).json({
+            message: "Can't add this repo in starred list, Error in server"
+        })
+    }
+
 }
 
-export const unstarRepository = (req: Request, res: Response) => {
-    console.log("req reached");;
+export const unstarRepository = async (req: Request, res: Response) => {
+    const parseNames = repoByNameSchema.safeParse(req.params);
+    if(!parseNames.success) {
+        return res.status(400).json({
+            message: "please provide the correct parameters"
+        })
+    }
+
+    const userId = req.user?.id;
+    if(!userId) {
+        return res.status(400).json({ message: "Can't find user's id" })
+    }
+
+    try {
+        const owenrname = parseNames.data.owner;
+        const repoName = parseNames.data.repo;
+
+        const targetRepo = await prismaClient.repository.findFirst({
+            where: {
+                name: repoName,
+                owner: {
+                    username: owenrname
+                }
+            },
+            select: {
+                id: true,
+                ownerId: true,
+                staredBy: {
+                    where: { id: userId },
+                    select: { id: true }
+                }
+            }
+        })
+
+        if(!targetRepo) {
+            return res.status(400).json({
+                message: "Repo not found"
+            })
+        }
+        if(targetRepo.staredBy.length === 0) {
+            res.status(400).json({
+                message: "You haven't starred this repo"
+            })
+        }
+
+        await prismaClient.user.update({
+            where: {
+                id: userId
+            },
+            data: {
+                starRepos: {
+                    disconnect: {
+                        id: targetRepo.id
+                    }
+                }
+            }
+        })
+
+
+        res.status(200).json({
+            message: "successfully removed from starred list"
+        })
+
+    } catch (error) {
+        console.log("Error in unstarRepository: ", error);
+        res.status(500).json({
+            message: "Can't unstar the repo, Error in server"
+        })
+    }
+
 }
-
-
