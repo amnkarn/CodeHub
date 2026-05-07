@@ -28,7 +28,7 @@ issueRouter.delete("/:owner/:repo/issues/:issueId", isAuthenticated, deleteIssue
 
 
 //my issues
-issueRouter.get("/me", getMyIssues);
+issueRouter.get("/me", isAuthenticated, getMyIssues);
 
 issueRouter.patch("/me/issues/:issueId", updateMyIssuesById);
 

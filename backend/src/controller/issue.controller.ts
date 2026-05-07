@@ -318,8 +318,47 @@ export const deleteIssue = async (req: Request, res: Response) => {
 
 //own issues
 export const getMyIssues = async (req: Request, res: Response) => {
-    console.log("req reached to getMyIssues")
+    const userId = req.user?.id;
+    if(!userId) return;
 
+    try {
+        const issuesAcrossAllRepos = await prismaClient.issue.findMany({
+            where: {
+                authorId: (userId as string)
+            },
+            select: {
+                id: true,
+                title: true,
+                status: true,
+                repository: {
+                    select: {
+                        name: true,
+                        owner: {
+                            select: { username: true }
+                        }
+                    }
+                },
+                createdAt: true
+            }
+        })
+        
+        if(!issuesAcrossAllRepos) {
+            return res.status(404).json({
+                message: "You haven't created any issue"
+            })
+        }
+
+        res.status(200).json({
+            message: "Issues find successfully",
+            issuesAcrossAllRepos
+        })
+        
+    } catch (error) {
+        console.log("Error in getMyIssues: ", error);
+        res.status(400).json({
+            message: "Error in server"
+        })
+    }
 }
 
 export const updateMyIssuesById = async (req: Request, res: Response) => {
