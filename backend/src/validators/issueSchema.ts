@@ -22,3 +22,7 @@ export const issueUpdateSchema = z.object({
     description: z.string().optional(),
     status: z.enum(['open', 'closed', 'assigned']).optional()
 })
+
+export const OnlyIssueParams= z.object({
+    issueId: z.string().uuid("Invalid issue is")
+})

@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { 
     createIssue, 
-    deleteIssue, 
-    deleteMyIssuesById, 
+    deleteIssue,
     getAllIssuesByRepo, 
     getIssueById, 
     getMyIssues, 
@@ -30,8 +29,6 @@ issueRouter.delete("/:owner/:repo/issues/:issueId", isAuthenticated, deleteIssue
 //my issues
 issueRouter.get("/me", isAuthenticated, getMyIssues);
 
-issueRouter.patch("/me/issues/:issueId", updateMyIssuesById);
-
-issueRouter.delete("/me/issues/:issueId", deleteMyIssuesById);
+issueRouter.patch("/me/issues/:issueId", isAuthenticated, updateMyIssuesById);
 
 export default issueRouter;

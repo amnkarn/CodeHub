@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createIssueSchema, issueByIdSchema, issueParams, issueUpdateSchema } from "../validators/issueSchema.js";
+import { createIssueSchema, issueByIdSchema, issueParams, issueUpdateSchema, OnlyIssueParams } from "../validators/issueSchema.js";
 import prismaClient from "../config/db.js";
 import { VISIBILITY } from "../generated/prisma/enums.js";
 
@@ -362,11 +362,71 @@ export const getMyIssues = async (req: Request, res: Response) => {
 }
 
 export const updateMyIssuesById = async (req: Request, res: Response) => {
-    console.log("req reached to updateMyIssuesById")
+    const parseIssueParams = OnlyIssueParams.safeParse(req.params);
+    if(!parseIssueParams.success) {
+        return res.status(400).json({
+            message: "Invalid issue id"
+        })
+    }
 
-}
+    const userId = req.user?.id;
+    if(!userId) return;
 
-export const deleteMyIssuesById = async (req: Request, res: Response) => {
-    console.log("req reached to deleteMyIssuesById")
+    const parsedData = issueUpdateSchema.safeParse(req.body);
+    if(!parsedData.success) {
+        return res.status(400).json({
+            message: "Invalid input data"
+        })
+    }
 
+    try {
+        let updateData: any = {};
+
+        const { title, description, status } = parsedData.data;
+        if(title) {
+            updateData.title = title;
+        }
+        if(description) {
+            updateData.description = description;
+        }
+        if(status) {
+            updateData.status = status;
+        }
+
+        if(Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                message: "Nothing to update"
+            })
+        }
+
+
+        const updateIssue = await prismaClient.issue.update({
+            where: {
+                id: parseIssueParams.data.issueId,
+                authorId: userId
+            },
+            data: updateData,
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                status: true,
+                repository: { select: { name: true } },
+                author: { select: { username: true } },
+                createdAt: true
+            }
+        })
+
+        res.status(200).json({
+            message: "Issue updated successfully",
+            updateIssue
+        })
+
+    } catch (error: any) {
+        if (error.code === 'P2025') {
+            return res.status(404).json({ message: "Issue not found" })
+        }
+        console.log("Error in updateMyIssuesById: ", error);
+        res.status(500).json({ message: "Error in server" })
+    }
 }
