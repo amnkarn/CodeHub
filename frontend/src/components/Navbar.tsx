@@ -12,7 +12,7 @@ export default function Navbar() {
     }
 
     return (
-        <div className="w-full h-18 flex items-center text-white justify-between bg-[#262E38]/70 backdrop-blur-md px-10">
+        <div className="w-full h-18 flex items-center text-gray-300 justify-between bg-[#151B25]/90 backdrop-blur-md px-10">
             <div className="flex gap-3 items-center">
                 <div>
                     <img src="../logo.png" alt="#logo" className="w-12 rounded-full" />

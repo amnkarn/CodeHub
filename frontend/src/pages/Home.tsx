@@ -1,6 +1,6 @@
-import Activity from "./components/home/Activity";
-import Navbar from "./components/home/Navbar";
-import Overview from "./components/home/Overview";
+import Activity from "../components/home/Activity"
+import Navbar from "../components/home/Navbar"
+import Overview from "../components/home/Overview"
 
 
 export default function Home() {

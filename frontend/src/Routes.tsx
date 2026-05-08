@@ -1,7 +1,6 @@
 import { useRoutes } from "react-router-dom"
-import LandingPage from "./LandingPage";
-import Home from "./Home";
-
+import LandingPage from "./pages/LandingPage";
+import Home from "./pages/Home";
 
 const AppRouter = () => {
 
