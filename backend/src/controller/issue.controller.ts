@@ -113,6 +113,14 @@ export const getAllIssuesByRepo = async (req: Request, res: Response) => {
                 description: true,
                 status: true,
                 author: { select: { username: true } },
+                comments: {
+                    select: {
+                        comment: true,
+                        author: {
+                            select: { username: true }
+                        }
+                    }
+                },
                 createdAt: true
             }
         })

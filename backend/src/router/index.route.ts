@@ -16,7 +16,7 @@ indexRouter.use("/repo", repoRouter);
 
 indexRouter.use("/issue", issueRouter);
 
-indexRouter.use("/comment", commentRouter);
+indexRouter.use("/repo/:owner", commentRouter);
 
 indexRouter.use("/fork", forkRouter);
 
