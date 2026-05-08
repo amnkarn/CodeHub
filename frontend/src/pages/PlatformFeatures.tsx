@@ -58,9 +58,7 @@ interface Div {
 
 function PlatformFeaturesDiv({ iconName, heading, para, fontColor, hoverBgClass }: Div) {
     return (
-        <div className={`flex flex-col items-start justify-center px-5 h-50  bg-[#13181F] w-[25%] border border-gray-700 rounded-lg bg-linear-to-br ${hoverBgClass} `}
-
-        >
+        <div className={`flex flex-col items-start justify-center px-5 h-50  bg-[#13181F] w-[25%] border border-gray-700 rounded-lg bg-linear-to-br ${hoverBgClass} `} >
             <div className="p-2 border border-gray-800 rounded-lg flex items-center justify-center mb-3">
                 <span className="material-symbols-outlined" style={{color: `${fontColor}`}} >
                     {iconName}
