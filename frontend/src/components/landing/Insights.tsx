@@ -2,7 +2,7 @@
 
 export default function Insights() {
     return (
-        <div className="w-full flex items-center justify-between border-y border-gray-950 py-12">
+        <div className="w-full flex items-center justify-between border-y border-gray-800 py-12 ">
             <InsightDiv 
                 iconName="group"
                 heading="4M+"
