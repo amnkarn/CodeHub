@@ -109,7 +109,6 @@ export const loginUser = async (req: Request, res: Response) => {
 }
 
 
-
 export const refreshAccessToken = async (req: Request, res: Response) => {
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
