@@ -4,7 +4,6 @@ import morgan from "morgan";
 import indexRouter from "./router/index.route.js";
 import cookiParser from "cookie-parser";
 
-
 const app: Application = express();
 
 app.use(cors({ 
