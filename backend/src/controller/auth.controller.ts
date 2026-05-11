@@ -19,10 +19,9 @@ export const registerUser = async (req: Request, res: Response) => {
     try {
         const { username, email, name, password } = parsedData.data;
         
-        const findUser = await prismaClient.user.findUnique({
+        const findUser = await prismaClient.user.findFirst({
             where: {
-                username,
-                email
+                OR: [ { username }, { email } ]
             }
         })
         
@@ -51,7 +50,7 @@ export const registerUser = async (req: Request, res: Response) => {
             data: {
                 username: user.username,
                 email: user.email,
-                name: user.email,
+                name: user.name,
                 verified: false,
             }
         })

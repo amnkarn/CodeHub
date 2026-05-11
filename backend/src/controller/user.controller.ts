@@ -11,7 +11,11 @@ import { getTargetQuerySchema } from "../validators/userSchema.js";
 //User Profile Management (User Controller)
 export const getCurrentUser = async (req: Request, res: Response) => {
     const userId = req.user?.id; //from cookies
-    if (!userId) return;
+    if (!userId) {
+        return res.status(401).json({
+            message: "Unauthorised"
+        })
+    }
 
     try {
         const user = await prismaClient.user.findUnique({
