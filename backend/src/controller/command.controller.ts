@@ -204,39 +204,41 @@ export async function pushRepo() {
 
 export async function pullRepo() {
     const repoPath = path.resolve(process.cwd(), ".codeHub");
-    const S3Bucket = "codehub-876163988927-us-east-1-an";
+    const S3Bucket = process.env.S3_BUCKET;
 
-    const params = {
-        Bucket: S3Bucket,
-        Prefix: "commits/"
-    }
+    const config = await readConfig();
+    const repoId = config.repoId;
 
     try {
         // get list of all files from bucket
-        const command = new ListObjectsV2Command(params);
-        const data = await s3.send(command);
+        const command = new ListObjectsV2Command({
+            Bucket: S3Bucket,
+            Prefix: `repo/${repoId}/commits/`,
+        })
 
-        if(!data.Contents) {
+        const data = await s3.send(command);
+        if(!data.Contents || data.Contents.length === 0) {
             console.log("No commits found in S3");
             return;
         }
 
-        // loop of the list and download
+        // loop on the list and download
         for(const file of data.Contents) {
             //console.log(file);
             const key = file.Key;
             if(!key) continue;
 
-            const localFilePath = path.join(repoPath, key);
+            const relativePath = key.replace(`repos/${repoId}`, "");
+            const localFilePath = path.join(repoPath, relativePath);
             const localDir = path.dirname(localFilePath);
 
             await fs.mkdir(localDir, {recursive: true});
 
-            const getObjParams = {
+            const getCommand = new GetObjectCommand({
                 Bucket: S3_BUCKET,
                 Key: key,
-            }
-            const getCommand = new GetObjectCommand(getObjParams);
+            });
+
             const response = await s3.send(getCommand); //fetch actual file
             
             if(response.Body) {
