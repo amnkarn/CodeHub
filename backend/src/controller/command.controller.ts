@@ -166,6 +166,9 @@ export async function pushRepo() {
     const commitsPath = path.join(repoPath, "commits");
 
     try {
+        const config = await readConfig();
+        const repoId = config.repoId;
+
         const commitDirs = await fs.readdir(commitsPath);
 
         for(const commitDir of commitDirs) {
@@ -182,12 +185,13 @@ export async function pushRepo() {
                     client: s3,
                     params: {
                         Bucket: S3_BUCKET,
-                        Key: `commits/${commitDir}/${file}`,
+                        Key: `repo/${repoId}/commits/${commitDir}/${file}`,
                         Body: fileContent,
                     }
                 })
 
                 await parallelUploads3.done();
+                console.log(`Pushed: ${commitDir}/${file}`);
             }
         }
 
