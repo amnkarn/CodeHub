@@ -2,10 +2,7 @@ import type { Request, Response } from "express";
 import { forkParamsSchema } from "../validators/forkSchema.js";
 import prismaClient from "../config/db.js";
 import { VISIBILITY } from "../generated/prisma/enums.js";
-import { s3, S3_BUCKET } from "../config/aws.config.js";
-import { CopyObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
-import copyRepoFiles from "../utils/copyRepoFiles.js";
-
+import copyRepoFilesInS3 from "../utils/copyRepoFiles.js";
 
 
 export const forkRepository = async (req: Request, res: Response) => {
@@ -94,7 +91,7 @@ export const forkRepository = async (req: Request, res: Response) => {
         })
 
         //copy s3 files
-        await copyRepoFiles(targetRepo.id, (userId as string));
+        await copyRepoFilesInS3(targetRepo.id, (userId as string));
 
         res.status(201).json({
             message: "Repository forked successfully"
@@ -126,7 +123,49 @@ export const getForkedRepositories = async (req: Request, res: Response) => {
         const ownerName = parsedParams.data.owner;
         const repoName = parsedParams.data.repo;
 
+        const repo = await prismaClient.repository.findFirst({
+            where: {
+                name: repoName,
+                owner: {
+                    name: ownerName,
+                },
+                visibility: VISIBILITY.public
+            },
+            select: {
+                id: true
+            }
+        })
         
+        if(!repo) {
+            return res.status(400).json({
+                message: "Repository not found"
+            })
+        }
+
+        const forks = await prismaClient.fork.findMany({
+            where: {
+                sourceCodeRepoId: repo.id
+            },
+            select: {
+                id: true,
+                forkedBy: {
+                    select: {
+                        username: true,
+                        name: true
+                    }
+                },
+                createdAt: true
+            },
+            orderBy: {
+                createdAt: "desc"
+            }
+        })
+
+        return res.send(200).json({
+            message: "Forks fetched successfully",
+            totalLength: forks.length,
+            forks
+        })
         
     } catch (error) {
         console.log("Error in getForkedRepositories: ", error);

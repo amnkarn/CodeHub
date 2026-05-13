@@ -8,9 +8,19 @@ interface revertArgs {
 
 // command controller
 yargs(hideBin(process.argv))
-    .command('start', "start new server", {}, start)
+    //.command('start', "start new server", {}, start)
 
-    .command('init', 'Initialise a new repository', {}, init)
+    .command(
+        'init', 
+        'Initialise a new repository',
+        (yargs) => {
+            return yargs.option("repo", {
+                describe: "Repository ID from CodeHub (get this after creating a repo on the site)",
+                type: "string"
+            })
+        },
+        init
+    )
 
     .command('push', 'Push commits to CodeHub', {}, pushRepo)
 
@@ -67,6 +77,6 @@ yargs(hideBin(process.argv))
     .help().argv;
 
 
-function start() {
-    console.log('server called')
-}
+//function start() {
+//    console.log('server called')
+//}
