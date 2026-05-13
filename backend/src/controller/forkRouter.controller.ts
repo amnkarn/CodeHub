@@ -14,7 +14,7 @@ export const forkRepository = async (req: Request, res: Response) => {
     }
 
     const userId = req.user?.id;
-    if(userId) {
+    if(!userId) {
         return res.status(401).json({
             message: "Unauthorized"
         })
@@ -90,11 +90,13 @@ export const forkRepository = async (req: Request, res: Response) => {
             }
         })
 
-        //copy s3 files
-        await copyRepoFilesInS3(targetRepo.id, (userId as string));
+        //copy s3 files * * *
+        const forkRepoId =  await copyRepoFilesInS3(targetRepo.id, (userId as string));
 
         res.status(201).json({
-            message: "Repository forked successfully"
+            message: "Repository forked successfully",
+            fork,
+            forkRepoId,
         })
         
     } catch (error: any) {
@@ -127,7 +129,7 @@ export const getForkedRepositories = async (req: Request, res: Response) => {
             where: {
                 name: repoName,
                 owner: {
-                    name: ownerName,
+                    username: ownerName,
                 },
                 visibility: VISIBILITY.public
             },
@@ -161,7 +163,7 @@ export const getForkedRepositories = async (req: Request, res: Response) => {
             }
         })
 
-        return res.send(200).json({
+        return res.status(200).json({
             message: "Forks fetched successfully",
             totalLength: forks.length,
             forks

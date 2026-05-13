@@ -1,4 +1,4 @@
-import yargs, { type ArgumentsCamelCase } from "yargs";
+import yargs from "yargs";
 import { hideBin } from "yargs/helpers"
 import { commitRepo, init, pullRepo, pushRepo, revertRepo, addRepo } from "./controller/command.controller.js";
 

@@ -84,13 +84,12 @@ export async function addRepo(argv: any) {
         }
 
         const filePath = path.resolve(process.cwd(), fileToStaging); //absolute path
-
         const fileName = path.basename(filePath); //name of the file
-
-        await fs.mkdir(stagingPath, { recursive: true }); //create staging dir
         const destPath = path.join(stagingPath, fileName); //destination path
 
-        await fs.copyFile(filePath, destPath);
+        await fs.mkdir(stagingPath, { recursive: true });
+
+        await fs.copyFile(filePath, destPath); //
         console.log(`File ${fileName} added to the staging area`);
 
     } catch (error: any) {
@@ -126,10 +125,10 @@ export async function commitRepo(argv: ArgumentsCamelCase<CommitArgs>) {
             return;
         }
 
-        const commitId = uuidv4();
+        const commitId = uuidv4(); //for unique file name
 
         const commitDir = path.join(commitPath, commitId);
-        await fs.mkdir(commitDir, { recursive: true });
+        await fs.mkdir(commitDir, { recursive: true }); //create commit
 
         for(const file of files) {
             //copy in commit folder
@@ -172,11 +171,12 @@ export async function pushRepo() {
         const commitDirs = await fs.readdir(commitsPath);
 
         for(const commitDir of commitDirs) {
-            const commitPath = path.join(commitsPath, commitDir);
-            const files = await fs.readdir(commitPath);
+            //inside every unique commitPath id, there can be many files
+            const commitPathWithId = path.join(commitsPath, commitDir);
+            const files = await fs.readdir(commitPathWithId);
 
             for(const file of files) {
-                const filePath = path.join(commitPath, file);
+                const filePath = path.join(commitPathWithId, file);
 
                 const fileContent = await fs.readFile(filePath);
 
