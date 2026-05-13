@@ -101,7 +101,7 @@ export async function commitRepo(argv: ArgumentsCamelCase<CommitArgs>) {
 }
 
 export async function pushRepo() {
-    const repoPath = path.resolve(process.cwd(), ".codeHub");
+    const repoPath = path.resolve(process.cwd(), ".codeHub");2
     const commitsPath = path.join(repoPath, "commits");
 
     try {
