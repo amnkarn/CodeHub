@@ -261,11 +261,12 @@ export async function revertRepo({commitId}: {commitId: string}) {
     const checkoutDir = path.resolve(repoPath, "..");// '/Project/
 
     try {
-        //check's does commit exists
+        //check's does commit exists locally
         try {
             await fs.access(commitPath);
         } catch (error) {
-            console.log(`Error: Commit ${commitId} not found.`)
+            console.log(`Error: Commit ${commitId} not found locally.`);
+            return;
         }
 
         const files = await fs.readdir(commitPath);
