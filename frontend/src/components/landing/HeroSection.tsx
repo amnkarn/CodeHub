@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 // ─── Typewriter words ─────
 const WORDS = ["future", "products", "ideas", "projects", "apps"];
@@ -117,6 +118,8 @@ export default function HeroSection() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [showCursor, setShowCursor] = useState(true);
     const [mounted, setMounted] = useState(false);
+
+    const navigate = useNavigate();
 
     // Fade-in on mount
     useEffect(() => {
@@ -272,6 +275,7 @@ export default function HeroSection() {
                                 "0 0 24px rgba(0,180,216,0.4), inset 0 1px 0 rgba(255,255,255,0.15)";
                             e.currentTarget.style.transform = "translateY(0)";
                         }}
+                        onClick={() => navigate("/home")}
                     >
                         Open Dashboard
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

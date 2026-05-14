@@ -40,8 +40,8 @@ export default function Navbar() {
                     <div className="border py-0.5 px-2 rounded-md text-xs">/</div>
                 </div>
 
-                <NavButton label="Sign in" onClick={() => {}} />
-                <NavButton label="Sign up" onClick={() => {}} outline={true} />
+                <NavButton label="Sign in" onClick={() => navigate("/login")} />
+                <NavButton label="Sign up" onClick={() => navigate("/register")} outline={true} />
             </div>
         </div>
     )
