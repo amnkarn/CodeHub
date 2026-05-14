@@ -66,6 +66,29 @@ export const forkRepository = async (req: Request, res: Response) => {
             })
         }
 
+        //**create new repository
+        
+        //if name conflicts,then add '-fork' in the last of the new forked repo name
+        const nameConflict = await prismaClient.repository.findUnique({
+            where: {
+                name_ownerId: {
+                    name: targetRepo.name,
+                    ownerId: userId
+                }
+            }
+        })
+
+        const forkedRepoName = nameConflict ? `${targetRepo.name}-fork` : targetRepo.name;
+
+        const newRepo = await prismaClient.repository.create({
+            data: {
+                name: forkedRepoName,
+                description: targetRepo.description,
+                visibility: VISIBILITY.public,
+                ownerId: userId
+            }
+        })
+
         const fork = await prismaClient.fork.create({
             data: {
                 sourceCodeRepoId: targetRepo.id,

@@ -21,7 +21,7 @@ export default async function copyRepoFilesInS3(originalRepoId: string, forkedBy
 
     if(!listed.Contents || listed.Contents?.length === 0){
         console.log("Original repo has no pushed commits to copy.");
-        return;
+        return forkedRepoId;
     }
 
     for(const obj of listed.Contents) {
@@ -33,6 +33,7 @@ export default async function copyRepoFilesInS3(originalRepoId: string, forkedBy
             `repos/${originalRepoId}/`, `repos/${originalRepoId}_${forkedByUserId}/`
         )
 
+        //this command will copy in the new created forked repo
         const copyCommand = new CopyObjectCommand({
             Bucket: S3_BUCKET,
             CopySource: `${S3_BUCKET}/${obj.Key}`,
