@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 
 
 export default function Navbar() {
     const [openSearchBox, setOpenSearchBox] = useState(false);
+    const navigate = useNavigate();
 
     if (openSearchBox) {
         return (
@@ -18,7 +20,7 @@ export default function Navbar() {
                     <img src="../logo.png" alt="#logo" className="w-12 rounded-full" />
                 </div>
 
-                <Links label="Platform" />
+                <Links label="Platform" onClick={() => navigate("/")}/>
                 <Links label="Solutions" />
                 <Links label="Resources" />
                 <Links label="Open Source" />
@@ -38,9 +40,17 @@ export default function Navbar() {
                     <div className="border py-0.5 px-2 rounded-md text-xs">/</div>
                 </div>
 
-                <div>Sign in</div>
-                <div className="px-2.5 py-1.5 rounded-md border">Sign up</div>
+                <NavButton label="Sign in" onClick={() => {}} />
+                <NavButton label="Sign up" onClick={() => {}} outline={true} />
             </div>
+        </div>
+    )
+}
+
+function NavButton({ label, onClick, outline }: { label: string, onClick: () => void, outline?: boolean }) {
+    return (
+        <div className={`px-2.5 py-1.5 rounded-md ${outline ? 'outline' : ''} transition-all hover:outline-2 cursor-pointer`} onClick={onClick} >
+            {label}
         </div>
     )
 }
@@ -65,7 +75,7 @@ function OpenSearchBox() {
 
 function Links({ label, onClick }: { label: string, onClick?: () => void }) {
     return (
-        <div className="flex items-center text-[17px]" onClick={onClick}>
+        <div className="flex items-center text-[17px] cursor-pointer" onClick={onClick}>
             <h4>{label}</h4>
             <span className="material-symbols-outlined">stat_minus_1</span>
         </div>

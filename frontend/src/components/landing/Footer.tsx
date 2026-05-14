@@ -6,7 +6,7 @@ export default function Footer() {
             <h1 className="text-white text-4xl font-bold">Ready to start building?</h1>
             <p className="text-gray-500 font-medium">Join developers shipping faster with CodeHub. Your next great project starts here.</p>
             
-            <button className="flex items-center gap-1 px-10 py-2.5 rounded-md bg-[#0DA2E7] font-medium">
+            <button className="flex items-center gap-1 px-10 py-2.5 rounded-md bg-[#0DA2E7] font-medium cursor-pointer hover:bg-[#0785c0]">
                 <p className="">Get Started</p>
                 <span className="material-symbols-outlined text-[18px]!">arrow_forward</span>
             </button>
