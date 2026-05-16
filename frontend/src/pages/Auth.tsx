@@ -8,15 +8,9 @@ export default function AuthPage() {
     const location = useLocation();
     const isRegisterMode = location.pathname === '/register';
 
-    //const authForm = document.getElementById('authForm');
-    //authForm?.addEventListener('submit', (e) => {
-    //    e.preventDefault();
-    //    authForm.reset
-    //})
-
     const { loading, handleLogin, handleRegister } = useAuth();
 
-    async function sendReq(e) {
+    async function sendReq(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         const form = e.currentTarget;
 
@@ -28,11 +22,14 @@ export default function AuthPage() {
             const name = (form.elements.namedItem("name") as HTMLInputElement | null)?.value || "";
             const email = (form.elements.namedItem("email") as HTMLInputElement | null)?.value || "";
             console.log("Processing Registration...", { username, email, name, password });
-            const data = handleRegister({username, email, name, password});
-            console.log(data);
+
+            const success = await handleRegister({username, email, name, password});
+            console.log(success);
+            if(success) navigate("/home");
 
         } else { //login form
             console.log("Processing Login...", { username, password });
+
             const success = await handleLogin({ username, password });
             if (success) {
                 navigate("/home");
@@ -43,7 +40,7 @@ export default function AuthPage() {
     return (
         <div className="w-full h-screen bg-[#0d1117]">
 
-            { loading ?? <Loader />}
+            { loading && <Loader />}
 
             <div className="flex flex-col items-center pt-10 w-[25%] text-white place-self-center gap-5 px-3">
                 <div className="flex items-center gap-2 cursor-pointer hover:scale-105">
