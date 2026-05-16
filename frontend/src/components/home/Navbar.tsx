@@ -17,6 +17,10 @@ export default function Navbar() {
         )
     }
 
+    function LogoutModal() {
+        console.log("modal triggered");
+    }
+
     return (
         <div className="w-full h-16 flex items-center text-white justify-between bg-[#151B25] backdrop-blur-md px-5 border-b border-gray-700">
             <div className="flex gap-3 pl-5 items-center">
@@ -53,7 +57,7 @@ export default function Navbar() {
                     <NavIconTemp icon={<Notification />} />
 
                     {/* require img and onClick */}
-                    <ProfileImg />
+                    <ProfileImg onClick={LogoutModal} />
                 </div>
             </div>
         </div>
