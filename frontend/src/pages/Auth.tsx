@@ -25,7 +25,10 @@ export default function AuthPage() {
 
             const success = await handleRegister({username, email, name, password});
             console.log(success);
-            if(success) navigate("/home");
+            if(success) {
+                //show the flash
+                navigate("/home");
+            }
 
         } else { //login form
             console.log("Processing Login...", { username, password });
