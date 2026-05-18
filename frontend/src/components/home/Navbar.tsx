@@ -1,3 +1,4 @@
+
 import { useState, type JSX } from "react";
 import NewAdd from "../../assets/icons/New";
 import Issue from "../../assets/icons/Issue";
@@ -5,11 +6,17 @@ import Pull from "../../assets/icons/Pull";
 import Repos from "../../assets/icons/Repos";
 import Notification from "../../assets/icons/Notifications";
 import ProfileImg from "./ProfileImg";
-
+import { useAuth } from "../../hooks/useAuth";
+import Loader from "../Loader";
+import { useNavigate } from "react-router-dom";
 
 
 export default function Navbar() {
     const [openSearchBox, setOpenSearchBox] = useState(false);
+    const [lgtModal, setLgtModal] = useState(false);
+    const { handleLogout, loading } = useAuth();
+    const navigate = useNavigate();
+
 
     if (openSearchBox) {
         return (
@@ -17,8 +24,22 @@ export default function Navbar() {
         )
     }
 
-    function LogoutModal() {
-        console.log("modal triggered");
+    function changeState() {
+        //console.log("modal triggered");
+        setLgtModal(prev => !prev);
+    }
+
+    async function logoutReq() {
+        const success = await handleLogout();
+        if(success) {
+            navigate("/");
+        }
+    }
+    
+    if(loading) {
+        return (
+            <Loader />
+        )
     }
 
     return (
@@ -57,7 +78,10 @@ export default function Navbar() {
                     <NavIconTemp icon={<Notification />} />
 
                     {/* require img and onClick */}
-                    <ProfileImg onClick={LogoutModal} />
+                    <div className="relative">
+                        <ProfileImg onClick={changeState} />
+                        { lgtModal && <LogoutModal onClick={logoutReq} /> }
+                    </div>
                 </div>
             </div>
         </div>
@@ -84,6 +108,16 @@ function OpenSearchBox() {
                 />
 
             </div>
+        </div>
+    )
+}
+
+
+function LogoutModal({onClick}: {onClick: () => void}) {
+    return (
+        <div className="absolute top-12 -right-[8px] flex items-center gap-2 bg-[#151B25] border border-zinc-500 px-5 py-5 rounded-lg text-gray-300 font-medium hover:text-white cursor-pointer hover:border-blue-400 text-[17px]" onClick={onClick}>
+            logout
+            <i className="fa-solid fa-arrow-right-from-bracket"></i>
         </div>
     )
 }

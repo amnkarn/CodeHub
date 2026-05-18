@@ -60,7 +60,7 @@ export function useAuth() {
         try {
             await logoutApi();
             setUser(null);
-
+            return true;
         } catch {
             console.log("Client side error in logout function");
             return false;
