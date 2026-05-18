@@ -48,7 +48,11 @@ export default function AuthPage() {
 
             { loading && <Loader />}
 
-            <div className="flex flex-col items-center pt-10 w-[25%] text-white place-self-center gap-5 px-3">
+            <div className="flex flex-col items-center pt-10 w-[25%] text-white place-self-center gap-5 px-3 relative">
+
+                {/*<Flash message="Successfully logged in" type="error" />*/}
+                
+
                 <div className="flex items-center gap-2 cursor-pointer hover:scale-105">
                     <img src="../logo.png" alt="#logo" className="w-14 rounded-full" />
                 </div>

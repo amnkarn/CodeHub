@@ -6,7 +6,7 @@ import { useAuth } from "./src/hooks/useAuth";
 import Loader from "./src/components/Loader";
 
 
-export default function AppRouter() {
+export default function AppRouter() { 
     return (
         <Routes>
             <Route path="/" element={<LandingPage />} />
