@@ -1,18 +1,21 @@
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./src/pages/Home"
 import LandingPage from "./src/pages/LandingPage"
 import AuthPage from "./src/pages/Auth"
-import Cookies from "js-cookie";
+import { useAuth } from "./src/hooks/useAuth";
+import Loader from "./src/components/Loader";
 
 
 export default function AppRouter() {
     return (
         <Routes>
             <Route path="/" element={<LandingPage />} />
-            
-            <ProtectedRoute>
-                <Route path="/home" element={<Home />} />
-            </ProtectedRoute>
+
+            <Route path="/home" element={
+                <ProtectedRoute>
+                    <Home />
+                </ProtectedRoute>
+            } />
 
             <Route path="/register" element={<AuthPage />} />
             <Route path="/login" element={<AuthPage />} />
@@ -20,16 +23,16 @@ export default function AppRouter() {
     );
 }
 
-function ProtectedRoute({children}: {children: React.ReactNode}) {
-    const navigate = useNavigate();
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+    const { user, loading } = useAuth();
 
-    const accessToke = Cookies.get("accessToken");
-    const refreshToken = Cookies.get("refreshToken");
-
-    if(!accessToke || !refreshToken) {
-        navigate("/");    
+    if(loading) {
+        return <Loader />
     }
 
+    if(!user) {
+        return <Navigate to={"/"} />
+    }
 
     return <>{children}</>
 }
