@@ -1,10 +1,10 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Home from "./src/pages/Home"
-import LandingPage from "./src/pages/LandingPage"
-import AuthPage from "./src/pages/Auth"
-import { useAuth } from "./src/hooks/useAuth";
-import Loader from "./src/components/Loader";
-
+import Home from "./pages/Home";
+import LandingPage from "./pages/LandingPage";
+import AuthPage from "./pages/Auth";
+import Loader from "./components/Loader";
+import { useAuth } from "./hooks/useAuth";
+import ProfilePage from "./pages/ProfilePage";
 
 export default function AppRouter() { 
     return (
@@ -19,6 +19,13 @@ export default function AppRouter() {
 
             <Route path="/register" element={<AuthPage />} />
             <Route path="/login" element={<AuthPage />} />
+
+            <Route path="/me" element={
+                <ProtectedRoute>
+                    <ProfilePage />
+                </ProtectedRoute>
+            } />
+
         </Routes>
     );
 }

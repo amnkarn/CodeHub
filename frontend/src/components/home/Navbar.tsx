@@ -115,12 +115,17 @@ function ProfileModal() {
         }
     }
 
+    function profileReq() {
+        navigate("/me")
+    }
+
     return (
         <div className="absolute top-12 -right-2 flex flex-col items-center gap-2 bg-[#151B25] border border-zinc-500 px-5 py-5 rounded-lg">
 
             <ModalLabels 
                 label="Profile"
                 icon={<i className="fa-regular fa-user"></i>}
+                onClick={profileReq}
             />
 
             <ModalLabels 
@@ -134,7 +139,7 @@ function ProfileModal() {
 
 interface Label {
     label: string
-    icon: any
+    icon: React.ReactNode
     onClick?: () => void
 }
 
