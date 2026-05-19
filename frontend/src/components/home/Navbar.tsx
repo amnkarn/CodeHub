@@ -1,4 +1,3 @@
-
 import { useState, type JSX } from "react";
 import NewAdd from "../../assets/icons/New";
 import Issue from "../../assets/icons/Issue";
@@ -14,8 +13,7 @@ import { useNavigate } from "react-router-dom";
 export default function Navbar() {
     const [openSearchBox, setOpenSearchBox] = useState(false);
     const [lgtModal, setLgtModal] = useState(false);
-    const { handleLogout, loading } = useAuth();
-    const navigate = useNavigate();
+    const { loading } = useAuth();
 
 
     if (openSearchBox) {
@@ -27,13 +25,6 @@ export default function Navbar() {
     function changeState() {
         //console.log("modal triggered");
         setLgtModal(prev => !prev);
-    }
-
-    async function logoutReq() {
-        const success = await handleLogout();
-        if(success) {
-            navigate("/");
-        }
     }
     
     if(loading) {
@@ -80,7 +71,7 @@ export default function Navbar() {
                     {/* require img and onClick */}
                     <div className="relative">
                         <ProfileImg onClick={changeState} />
-                        { lgtModal && <LogoutModal onClick={logoutReq} /> }
+                        { lgtModal && <ProfileModal /> }
                     </div>
                 </div>
             </div>
@@ -113,11 +104,45 @@ function OpenSearchBox() {
 }
 
 
-function LogoutModal({onClick}: {onClick: () => void}) {
+function ProfileModal() {
+    const { handleLogout } = useAuth();
+    const navigate = useNavigate();
+
+    async function logoutReq() {
+        const success = await handleLogout();
+        if(success) {
+            navigate("/");
+        }
+    }
+
     return (
-        <div className="absolute top-12 -right-[8px] flex items-center gap-2 bg-[#151B25] border border-zinc-500 px-5 py-5 rounded-lg text-gray-300 font-medium hover:text-white cursor-pointer hover:border-blue-400 text-[17px]" onClick={onClick}>
-            logout
-            <i className="fa-solid fa-arrow-right-from-bracket"></i>
+        <div className="absolute top-12 -right-2 flex flex-col items-center gap-2 bg-[#151B25] border border-zinc-500 px-5 py-5 rounded-lg">
+
+            <ModalLabels 
+                label="Profile"
+                icon={<i className="fa-regular fa-user"></i>}
+            />
+
+            <ModalLabels 
+                label="logout"
+                icon={<i className="fa-solid fa-arrow-right-from-bracket"></i>}
+                onClick={logoutReq}
+            />
+        </div>
+    )
+}
+
+interface Label {
+    label: string
+    icon: any
+    onClick?: () => void
+}
+
+function ModalLabels({label, icon, onClick}: Label) {
+    return (
+        <div className="flex items-center gap-3 text-gray-400 font-medium hover:text-white cursor-pointer hover:border-blue-400 text-[17px]" onClick={onClick} >
+            <p>{label}</p>
+            {icon}
         </div>
     )
 }

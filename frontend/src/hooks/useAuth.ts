@@ -33,6 +33,7 @@ export function useAuth() {
 
         } catch {
             console.log("Client side error in login function");
+            return false;
         } finally {
             setLoading(false);
         }
@@ -43,7 +44,9 @@ export function useAuth() {
 
         try {
             const data = await registerApi({username, email, name, password});
-            setUser(data.user);
+            console.log(data);
+            
+            setUser(data.data);
             return true;
 
         } catch {

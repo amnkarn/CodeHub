@@ -10,6 +10,7 @@ interface RegisterUser {
 
 export const registerApi = async ({ username, email, name, password }: RegisterUser) => {
     const response = await axiosInstanse.post("/auth/register", { username, email, name, password });
+    console.log("api response: ", response);
     return response.data;
 }
 

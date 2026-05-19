@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "../hooks/useAuth";
 import Loader from "../components/Loader";
-import Flash from "../components/Flah";
+//import Flash from "../components/Flah";
 
 
 export default function AuthPage() {
@@ -28,7 +28,8 @@ export default function AuthPage() {
             console.log(success);
             if(success) {
                 //show the flash
-                <Flash message="Successfully registered" />
+                //<Flash message="Successfully registered" />
+                alert("successfully registered");
                 navigate("/home");
             }
 
@@ -37,7 +38,8 @@ export default function AuthPage() {
 
             const success = await handleLogin({ username, password });
             if (success) {
-                <Flash message="Successfully logged in" />
+                //<Flash message="Successfully logged in" />
+                //alert("successfully logged in");
                 navigate("/home");
             }
         }
