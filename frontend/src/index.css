@@ -7,25 +7,72 @@
 /* github icons */
 @import url("https://cdn.jsdelivr.net/npm/@primer/octicons@19.9.0/build/build.css");
 
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 
-
-font-face {
+@font-face {
     font-family: 'inter';
     src: url(../fonts/inter-regular.ttf) format('truetype');
 }
-font-face { 
+@font-face {
     font-family: "jetBrains";
-    src: url(../fonts/JetBrains-Regular.ttf);
+    src: url(../fonts/JetBrains-Regular.ttf) format('truetype');
 }
-font-face { 
+@font-face {
     font-family: "jetBrains-italic";
-    src: url(../fonts/JetBrainsMonoNL-LightItalic.ttf);
+    src: url(../fonts/JetBrainsMonoNL-LightItalic.ttf) format('truetype');
 }
 
-@theme {
-  --font-inter: 'inter', system-ui, sans-serif;
-  --font-jetBrains: 'jetBrains', monospace;
-  --font-jetBrains-italic: 'jetBrains-italic', monospace;
+:root {
+    --font-inter: 'inter', system-ui, sans-serif;
+    --font-jetBrains: 'jetBrains', monospace;
+    --font-jetBrains-italic: 'jetBrains-italic', monospace;
+
+    /* Dark theme tokens */
+    --background: #0b1220;
+    --foreground: #dbeafe;
+    --muted-foreground: #93a3b3;
+    --card: #0f1724;
+    --border: #1f2a37;
+    --primary: #0ea5ff;
+    --ring: rgba(14,165,255,0.16);
+    --green-online: #16a34a;
+    --yellow: #f59e0b;
+    --red: #f43f5e;
 }
+
+/* Base fallbacks so the page renders dark even if Tailwind custom colors aren't configured */
+html, body, #root {
+    height: 100%;
+}
+body {
+    font-family: var(--font-inter);
+    background-color: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility helpers used by the app (minimal subset) */
+.bg-background { background-color: var(--background) !important; }
+.text-foreground { color: var(--foreground) !important; }
+.text-muted-foreground { color: var(--muted-foreground) !important; }
+.bg-card { background-color: var(--card) !important; }
+.border-border { border-color: var(--border) !important; }
+.text-primary { color: var(--primary) !important; }
+.bg-primary { background-color: var(--primary) !important; }
+.ring-ring { box-shadow: 0 0 0 3px var(--ring) !important; }
+.bg-green-400 { background-color: var(--green-online) !important; }
+.text-red-400 { color: var(--red) !important; }
+.fill-yellow-400 { fill: var(--yellow) !important; }
+
+/* Small helpers matching some used class names (non exhaustive) */
+.bg-muted { background-color: rgba(255,255,255,0.03) !important; }
+.bg-muted\/30 { background-color: rgba(255,255,255,0.03) !important; }
+.bg-primary\/10 { background-color: rgba(14,165,255,0.08) !important; }
+.bg-primary\/20 { background-color: rgba(14,165,255,0.16) !important; }
+
+/* Ensure images inside avatar fit correctly */
+.aspect-square { aspect-ratio: 1 / 1; }
