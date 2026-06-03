@@ -108,13 +108,13 @@ function generateContributions(seed: string): number[] {
   });
 }
 
-const CONTRIB_COLORS = [
-  "bg-muted/40",
-  "bg-primary/30",
-  "bg-primary/55",
-  "bg-primary/80",
-  "bg-primary",
-];
+//const CONTRIB_COLORS = [
+//  "bg-muted/40",
+//  "bg-primary/30",
+//  "bg-primary/55",
+//  "bg-primary/80",
+//  "bg-primary",
+//];
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
