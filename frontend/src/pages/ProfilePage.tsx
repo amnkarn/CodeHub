@@ -38,45 +38,45 @@ interface Repository {
 }
 
 // --- Placeholder Hook for Data Fetching ---
-//function useProfileData(username: string) {
-//  const [user, setUser] = useState<UserProfile | null>(null);
-//  const [repos, setRepos] = useState<Repository[] | null>(null);
-//  const [isLoading, setIsLoading] = useState(true);
+function useProfileData(username: string) {
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [repos, setRepos] = useState<Repository[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-//  useEffect(() => {
-//    setIsLoading(true);
-//    // MOCK API CALL: Replace this block with your actual fetch logic
-//    setTimeout(() => {
-//      setUser({
-//        name: "Developer Name",
-//        username: username,
-//        bio: "Full-stack developer building cool things on the internet.",
-//        followers: 1204,
-//        following: 34,
-//        location: "San Francisco, CA",
-//        website: "https://example.com",
-//        publicRepos: 12,
-//      });
+  useEffect(() => {
+    setIsLoading(true);
+    // MOCK API CALL: Replace this block with your actual fetch logic
+    setTimeout(() => {
+      setUser({
+        name: "Developer Name",
+        username: username,
+        bio: "Full-stack developer building cool things on the internet.",
+        followers: 1204,
+        following: 34,
+        location: "San Francisco, CA",
+        website: "https://example.com",
+        publicRepos: 12,
+      });
 
-//      setRepos([
-//        {
-//          id: 1,
-//          name: "awesome-project",
-//          description: "A really awesome project built with React and Tailwind.",
-//          isPrivate: false,
-//          topics: ["react", "tailwind", "typescript"],
-//          language: "TypeScript",
-//          stars: 128,
-//          forks: 12,
-//          openIssues: 3,
-//        },
-//      ]);
-//      setIsLoading(false);
-//    }, 1000);
-//  }, [username]);
+      setRepos([
+        {
+          id: 1,
+          name: "awesome-project",
+          description: "A really awesome project built with React and Tailwind.",
+          isPrivate: false,
+          topics: ["react", "tailwind", "typescript"],
+          language: "TypeScript",
+          stars: 128,
+          forks: 12,
+          openIssues: 3,
+        },
+      ]);
+      setIsLoading(false);
+    }, 1000);
+  }, [username]);
 
-//  return { user, repos, userLoading: isLoading, reposLoading: isLoading };
-//}
+  return { user, repos, userLoading: isLoading, reposLoading: isLoading };
+}
 
 // --- Constants & Helpers ---
 const LANGUAGE_COLORS: Record<string, string> = {
