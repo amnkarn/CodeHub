@@ -27,9 +27,9 @@ repoRouter.get("/me", isAuthenticated, getMyRepositories);
 
 repoRouter.get("/me/starred", isAuthenticated, getMyStarredRepos);
 
-repoRouter.get("/:username", getUserRepositories); //all repos of user
+repoRouter.get("/:username", getUserRepositories);
 
-repoRouter.get("/:username/starred", getUserStarredRepos); // starred repos of a user
+repoRouter.get("/:username/starred", getUserStarredRepos);
 
 
 
