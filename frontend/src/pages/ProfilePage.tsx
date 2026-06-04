@@ -12,7 +12,6 @@ import {
   Calendar,
 } from "lucide-react";
 
-// --- Types for your data ---
 interface UserProfile {
   name: string;
   username: string;
@@ -43,6 +42,7 @@ function useProfileData(username: string) {
   const [repos, setRepos] = useState<Repository[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  //fetch and set user details here
   useEffect(() => {
     setIsLoading(true);
     // MOCK API CALL: Replace this block with your actual fetch logic
@@ -78,7 +78,6 @@ function useProfileData(username: string) {
   return { user, repos, userLoading: isLoading, reposLoading: isLoading };
 }
 
-// --- Constants & Helpers ---
 const LANGUAGE_COLORS: Record<string, string> = {
   TypeScript: "#3178c6",
   JavaScript: "#f1e05a",
@@ -182,7 +181,7 @@ function ContributionGraph({ username }: { username: string }) {
                     <div
                       key={d}
                       title={`${level === 0 ? "No" : level * 3} contributions`}
-                      className={`h-2.75 w-2.75 rounded-xs ${CONTRIB_COLORS[level]} transition-opacity hover:opacity-70 cursor-default`}
+                      className={`h-[11px] w-[11px] rounded-[2px] ${CONTRIB_COLORS[level]} transition-opacity hover:opacity-70 cursor-default`}
                     />
                   );
                 })}
@@ -402,11 +401,7 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
                                 <span className="flex items-center gap-1.5">
                                   <span
                                     className="w-2.5 h-2.5 rounded-full"
-                                    style={{
-                                      backgroundColor:
-                                        LANGUAGE_COLORS[repo.language] ??
-                                        "#8b949e",
-                                    }}
+                                    style={{ backgroundColor: LANGUAGE_COLORS[repo.language] ?? "#8b949e" }}
                                   />
                                   {repo.language}
                                 </span>
@@ -434,6 +429,7 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
                             </div>
                           </div>
 
+                          {/*start repo components*/}
                           <button
                             onClick={() => toggleStar(repo.id)}
                             className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all ${
