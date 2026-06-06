@@ -12,7 +12,7 @@ import {
   Calendar,
 } from "lucide-react";
 
-interface UserProfile {
+export interface UserProfile {
   name: string;
   username: string;
   avatarUrl?: string;
@@ -24,7 +24,7 @@ interface UserProfile {
   publicRepos: number;
 }
 
-interface Repository {
+export interface Repository {
   id: number;
   name: string;
   description?: string;
@@ -46,6 +46,9 @@ function useProfileData(username: string) {
   useEffect(() => {
     setIsLoading(true);
     // MOCK API CALL: Replace this block with your actual fetch logic
+
+
+
     setTimeout(() => {
       setUser({
         name: "Developer Name",
@@ -181,7 +184,7 @@ function ContributionGraph({ username }: { username: string }) {
                     <div
                       key={d}
                       title={`${level === 0 ? "No" : level * 3} contributions`}
-                      className={`h-[11px] w-[11px] rounded-[2px] ${CONTRIB_COLORS[level]} transition-opacity hover:opacity-70 cursor-default`}
+                      className={`h-2.75 w-2.75 rounded-[2px] ${CONTRIB_COLORS[level]} transition-opacity hover:opacity-70 cursor-default`}
                     />
                   );
                 })}
