@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { getCurrentUserApi, getUserByUsernameApi } from "../api/user.api";
+import { getCurrentUserApi, getUserByUsernameApi, getUserFollowersApi, getUserFollowingApi } from "../api/user.api";
+import { useAuth } from "./useAuth";
 
 
-export default async function useUser(username?: string, isCurrentUser: boolean = false) {
+export default function useUser(username?: string, isCurrentUser: boolean = false) {
     const [user, setUser] = useState(null);
-    const [repos, setRepos] = useState(null);
     const [loading, setLoading] = useState(true);
+    const {user: currentUser} = useAuth();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -13,11 +14,26 @@ export default async function useUser(username?: string, isCurrentUser: boolean 
 
             try {
                 let userData;
-                
-                if(isCurrentUser) {
+
+                if (isCurrentUser) {
                     userData = await getCurrentUserApi();
-                } else if(username) {
+                } else if (username) {
                     userData = await getUserByUsernameApi(username);
+
+                    try { //Fetch followers and following data for the public profile
+                        const followers = await getUserFollowersApi(username);
+                        const following = await getUserFollowingApi(username);
+                        userData.followers = followers;
+                        userData.following = following;
+                    } catch (err) {
+                        console.warn("Could not fetch followers/following data:", err);
+                    }
+                } else if (currentUser) {
+                    userData = await getCurrentUserApi();
+                }
+
+                if(!userData) {
+                    throw new Error("Failed to fetch user data");
                 }
 
                 setUser(userData)
@@ -29,7 +45,7 @@ export default async function useUser(username?: string, isCurrentUser: boolean 
         }
 
         fetchUserData();
-    }, [username, isCurrentUser])
+    }, [username, isCurrentUser, currentUser]);
 
-    return { user, repos, loading }
+    return { user, loading }
 }
