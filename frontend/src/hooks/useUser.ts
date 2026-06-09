@@ -3,7 +3,8 @@ import {
     getCurrentUserApi, 
     getUserByUsernameApi, 
     getUserFollowersApi, 
-    getUserFollowingApi 
+    getUserFollowingApi,
+    getUserRepositoriesApi
 } from "../api/user.api";
 import { useAuth } from "./useAuth";
 
@@ -42,7 +43,7 @@ export interface UserProfile {
 }
 
 export default function useUser(username?: string, isCurrentUser: boolean = false) {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const {user: currentUser} = useAuth();
 
@@ -52,23 +53,26 @@ export default function useUser(username?: string, isCurrentUser: boolean = fals
 
             try {
                 let userData: UserProfile | null = null;
+                const shouldFetchCurrent = isCurrentUser || !username;
 
-                if (isCurrentUser) {
-                    //fetch current logged in user
+                if (shouldFetchCurrent && currentUser) {
                     userData = await getCurrentUserApi();
                 } else if (username) {
                     userData = await getUserByUsernameApi(username);
+                }
 
-                    try { //Fetch followers and following data for the public profile
-                        const followers = await getUserFollowersApi(username);
-                        const following = await getUserFollowingApi(username);
+                if (userData) {
+                    try {
+                        const followers = await getUserFollowersApi(userData.username);
+                        const following = await getUserFollowingApi(userData.username);
+                        const repositories = await getUserRepositoriesApi(userData.username);
+
                         userData.followers = followers;
                         userData.following = following;
+                        userData.repositories = repositories;
                     } catch (err) {
-                        console.warn("Could not fetch followers/following data:", err);
+                        console.warn("Could not fetch followers/following/repositories data:", err);
                     }
-                } else if (currentUser) {
-                    userData = await getCurrentUserApi();
                 }
 
                 if(!userData) {

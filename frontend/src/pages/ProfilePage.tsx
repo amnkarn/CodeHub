@@ -11,6 +11,9 @@ import {
   AlertCircle,
   Calendar,
 } from "lucide-react";
+import useUser from "../hooks/useUser";
+import { useAuth } from "../hooks/useAuth";
+import { followUserApi, unfollowUserApi } from "../api/user.api";
 
 export interface UserProfile {
   name: string;
@@ -25,60 +28,17 @@ export interface UserProfile {
 }
 
 export interface Repository {
-  id: number;
+  id: string;
   name: string;
   description?: string;
-  isPrivate: boolean;
-  topics?: string[];
-  language?: string;
-  stars: number;
-  forks: number;
-  openIssues: number;
-}
+  visibility: string;
 
-// --- Placeholder Hook for Data Fetching ---
-function useProfileData(username: string) {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [repos, setRepos] = useState<Repository[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  //fetch and set user details here
-  useEffect(() => {
-    setIsLoading(true);
-    // MOCK API CALL: Replace this block with your actual fetch logic
-
-
-
-    setTimeout(() => {
-      setUser({
-        name: "Developer Name",
-        username: username,
-        bio: "Full-stack developer building cool things on the internet.",
-        followers: 1204,
-        following: 34,
-        location: "San Francisco, CA",
-        website: "https://example.com",
-        publicRepos: 12,
-      });
-
-      setRepos([
-        {
-          id: 1,
-          name: "awesome-project",
-          description: "A really awesome project built with React and Tailwind.",
-          isPrivate: false,
-          topics: ["react", "tailwind", "typescript"],
-          language: "TypeScript",
-          stars: 128,
-          forks: 12,
-          openIssues: 3,
-        },
-      ]);
-      setIsLoading(false);
-    }, 1000);
-  }, [username]);
-
-  return { user, repos, userLoading: isLoading, reposLoading: isLoading };
+  _count?: {
+    staredBy: number;
+    fork: number;
+    issues: number;
+  };
+  updatedAt?: string;
 }
 
 const LANGUAGE_COLORS: Record<string, string> = {
@@ -200,12 +160,24 @@ function ContributionGraph({ username }: { username: string }) {
 
 
 // --- Main Page Component ---
-export default function ProfilePage({ username = "devuser" }: { username?: string }) {
-  const [starredRepos, setStarredRepos] = useState<Set<number>>(new Set());
+export default function ProfilePage({ username }: { username?: string }) {
+  const [starredRepos, setStarredRepos] = useState<Set<string>>(new Set());
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
 
-  const { user, repos, userLoading, reposLoading } = useProfileData(username);
+  const { user: profileUser, loading: userLoading } = useUser(username);
+  const { user: currentUser } = useAuth();
 
-  const toggleStar = (id: number) => {
+  const currentUsername = (currentUser as any)?.username ?? (currentUser as any)?.user?.username;
+  const isOwnProfile = currentUsername && (profileUser as any)?.username === currentUsername;
+  const user = profileUser;
+  const repos = (profileUser as any)?.repositories || [];
+  const followersCount = (profileUser as any)?._count?.followedBy ?? ((profileUser as any)?.followers?.length ?? 0);
+  const followingCount = (profileUser as any)?._count?.following ?? ((profileUser as any)?.following?.length ?? 0);
+  const reposLoading = userLoading;
+  const isLoading = userLoading;
+
+  const toggleStar = (id: string) => {
     setStarredRepos((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -214,13 +186,33 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
     });
   };
 
+  const handleFollowingToggle = async () => {
+    if(!(profileUser as any)?.username) return;
+    setIsFollowLoading(true);
+
+    try {
+      if (isFollowing) {
+        await unfollowUserApi((profileUser as any).username);
+        setIsFollowing(false);
+      } else {
+        await followUserApi((profileUser as any).username);
+        setIsFollowing(true);
+      }
+    } catch (err) {
+      console.error("Error toggling follow:", err);
+    } finally {
+      setIsFollowLoading(false);
+    }
+  }
+
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="container px-4 py-8 max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* ── Sidebar ────────────────────────────────── */}
           <div className="lg:col-span-1">
-            {userLoading ? (
+            {isLoading ? (
               <div className="space-y-3">
                 <div className="animate-pulse bg-primary/10 h-24 w-24 rounded-full" />
                 <div className="animate-pulse bg-primary/10 rounded-md h-6 w-32" />
@@ -268,22 +260,27 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
                   </p>
                 )}
 
-                <button className="inline-flex w-full items-center justify-center rounded-md border border-border bg-transparent px-3 py-1.5 text-sm font-medium font-mono shadow-sm transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                  <Users className="h-3.5 w-3.5 mr-1.5" /> Follow
-                </button>
+                {!isOwnProfile && (
+                  <button 
+                    onClick={handleFollowingToggle}
+                    disabled={isFollowLoading}
+                    className="inline-flex w-full items-center justify-center rounded-md border border-border bg-transparent px-3 py-1.5 text-sm font-medium font-mono shadow-sm transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed">
+                    <Users className="h-3.5 w-3.5 mr-1.5" /> {isFollowing ? "Unfollow" : "Follow"}
+                  </button>
+                )}
 
                 <div className="flex items-center gap-3 text-sm font-mono">
                   <span className="flex items-center gap-1 text-muted-foreground">
                     <Users className="h-4 w-4 shrink-0" />
                     <span className="font-semibold text-foreground">
-                      {user.followers.toLocaleString()}
+                      {followersCount.toLocaleString()}
                     </span>
                     <span>followers</span>
                   </span>
                   <span className="text-muted-foreground">·</span>
                   <span className="text-muted-foreground">
                     <span className="font-semibold text-foreground">
-                      {user.following.toLocaleString()}
+                      {followingCount.toLocaleString()}
                     </span>{" "}
                     following
                   </span>
@@ -311,7 +308,7 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
                   )}
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <BookOpen className="h-4 w-4 shrink-0 text-muted-foreground/60" />
-                    <span>{user.publicRepos} public repositories</span>
+                    <span>{repos.length} public repositories</span>
                   </div>
                 </div>
               </div>
@@ -320,7 +317,7 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
 
           {/* ── Main ───────────────────────────────────── */}
           <div className="lg:col-span-3 space-y-6">
-            {!userLoading && user && <ContributionGraph username={username} />}
+            {!userLoading && user && <ContributionGraph username={user.username} />}
 
             <div>
               <div className="flex items-center justify-between mb-4">
@@ -357,8 +354,11 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
                   </div>
                 ) : (
                   repos?.map((repo) => {
-                    const isStarred = starredRepos.has(repo.id);
-                    const displayStars = repo.stars + (isStarred ? 1 : 0);
+                    const isStarred = starredRepos.has(repo.name);
+                    const displayStars = (repo._count?.staredBy || 0) + (isStarred ? 1 : 0);
+                    const displayForks = repo._count?.fork || 0;
+                    const displayIssues = repo._count?.issues || 0;
+                    
                     return (
                       <div
                         key={repo.id}
@@ -367,7 +367,7 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              {repo.isPrivate ? (
+                              {repo.visibility === "private" ? (
                                 <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                               ) : (
                                 <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -376,7 +376,7 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
                                 {repo.name}
                               </span>
                               <span className="inline-flex items-center rounded-full border border-border px-1.5 py-0 text-xs font-semibold font-mono text-foreground">
-                                {repo.isPrivate ? "Private" : "Public"}
+                                {repo.visibility === "private" ? "Private" : "Public"}
                               </span>
                             </div>
 
@@ -386,7 +386,7 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
                               </p>
                             )}
 
-                            {repo.topics && repo.topics.length > 0 && (
+                            {/*{repo.topics && repo.topics.length > 0 && (
                               <div className="flex flex-wrap gap-1.5 mb-3">
                                 {repo.topics.map((topic) => (
                                   <span
@@ -397,10 +397,10 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
                                   </span>
                                 ))}
                               </div>
-                            )}
+                            )}*/}
 
                             <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground">
-                              {repo.language && (
+                              {/*{repo.language && (
                                 <span className="flex items-center gap-1.5">
                                   <span
                                     className="w-2.5 h-2.5 rounded-full"
@@ -408,7 +408,7 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
                                   />
                                   {repo.language}
                                 </span>
-                              )}
+                              )}*/}
                               <span className="flex items-center gap-1">
                                 <Star
                                   className={`h-3.5 w-3.5 ${
@@ -421,12 +421,12 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
                               </span>
                               <span className="flex items-center gap-1">
                                 <GitFork className="h-3.5 w-3.5" />
-                                {repo.forks.toLocaleString()}
+                                {displayForks.toLocaleString()}
                               </span>
-                              {repo.openIssues > 0 && (
+                              {displayIssues > 0 && (
                                 <span className="flex items-center gap-1 text-red-400">
                                   <AlertCircle className="h-3.5 w-3.5" />
-                                  {repo.openIssues} issues
+                                  {displayIssues} issues
                                 </span>
                               )}
                             </div>
@@ -434,7 +434,7 @@ export default function ProfilePage({ username = "devuser" }: { username?: strin
 
                           {/*start repo components*/}
                           <button
-                            onClick={() => toggleStar(repo.id)}
+                            onClick={() => toggleStar(repo.name)}
                             className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all ${
                               isStarred
                                 ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20"

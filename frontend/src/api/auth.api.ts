@@ -31,5 +31,5 @@ export const refreshTokenApi = async () => {
 
 export const getMe = async () => {
     const response = await axiosInstanse.get("/user/me");
-    return response.data;
+    return response.data.user;
 }

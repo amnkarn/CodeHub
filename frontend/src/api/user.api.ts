@@ -20,6 +20,11 @@ export const getUserFollowingApi = async (username: string) => {
     return response.data.userFollowing.following;
 }
 
+export const getUserRepositoriesApi = async (username: string) => {
+    const response = await axiosInstanse.get(`/repo/username/${username}`);
+    return response.data.repositories;
+}
+
 // Follow a user
 export const followUserApi = async (targetUsername: string) => {
   const response = await axiosInstanse.post(`/user/follow?target=${targetUsername}`);
