@@ -14,6 +14,7 @@ import {
 import useUser from "../hooks/useUser";
 import { useAuth } from "../hooks/useAuth";
 import { followUserApi, unfollowUserApi } from "../api/user.api";
+import ProfilePageNavbar from "../components/profile/navbar";
 
 export interface UserProfile {
   name: string;
@@ -208,6 +209,7 @@ export default function ProfilePage({ username }: { username?: string }) {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
+      <ProfilePageNavbar />
       <div className="container px-4 py-8 max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* ── Sidebar ────────────────────────────────── */}
