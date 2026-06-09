@@ -14,7 +14,7 @@ import {
 import useUser from "../hooks/useUser";
 import { useAuth } from "../hooks/useAuth";
 import { followUserApi, unfollowUserApi } from "../api/user.api";
-import ProfilePageNavbar from "../components/profile/navbar";
+import ProfilePageNavbar from "../components/profilePage/navbar";
 
 export interface UserProfile {
   name: string;
@@ -42,16 +42,16 @@ export interface Repository {
   updatedAt?: string;
 }
 
-const LANGUAGE_COLORS: Record<string, string> = {
-  TypeScript: "#3178c6",
-  JavaScript: "#f1e05a",
-  Rust: "#dea584",
-  Go: "#00add8",
-  Python: "#3572a5",
-  Java: "#b07219",
-  "C++": "#f34b7d",
-  Ruby: "#701516",
-};
+//const LANGUAGE_COLORS: Record<string, string> = {
+//  TypeScript: "#3178c6",
+//  JavaScript: "#f1e05a",
+//  Rust: "#dea584",
+//  Go: "#00add8",
+//  Python: "#3572a5",
+//  Java: "#b07219",
+//  "C++": "#f34b7d",
+//  Ruby: "#701516",
+//};
 
 function generateContributions(seed: string): number[] {
   let h = 0;
