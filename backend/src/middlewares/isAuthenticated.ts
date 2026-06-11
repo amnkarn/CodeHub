@@ -21,7 +21,12 @@ export default async function isAuthenticated(req: Request, res: Response, next:
     }
 
     const secret = process.env.JWT_SECRET;
-    if(!secret) return;
+    if(!secret) {
+        console.error("JWT_SECRET environment variable is not configured");
+        return res.status(500).json({
+            message: "Server configuration error"
+        });
+    }
 
     try {
         const decodeAccessToken = jwt.verify(accessToken, secret) as jwtPayload;

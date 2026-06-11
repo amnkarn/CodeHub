@@ -55,7 +55,11 @@ export const getCurrentUser = async (req: Request, res: Response) => {
 
 export const updateUserProfile = async (req: Request, res: Response) => {
     const userId = req.user?.id;
-    if (!userId) return;
+    if (!userId) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
 
     const parsedData = userUpdateSchema.safeParse(req.body);
     if (!parsedData.success) {
@@ -147,7 +151,11 @@ export const deleteUserProfile = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
     const accessToken = req.cookies.accessToken;
     const userId = req.user?.id; //from cookies
-    if (!userId) return;
+    if (!userId) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
 
     try {
         const user = await prismaClient.user.delete({
@@ -160,8 +168,8 @@ export const deleteUserProfile = async (req: Request, res: Response) => {
         const decodeAccessToken = jwt.verify(accessToken, process.env.JWT_SECRET!) as jwtPayload;
 
         //blacklist both tokens
-        blackListToken(decodeRefreshToken.jti, 604800);
-        blackListToken(decodeAccessToken.jti, 900);
+        await blackListToken(decodeRefreshToken.jti, 604800);
+        await blackListToken(decodeAccessToken.jti, 900);
 
         res.clearCookie("refreshToken");
         res.clearCookie("accessToken");
@@ -181,7 +189,11 @@ export const deleteUserProfile = async (req: Request, res: Response) => {
 
 export const getMyFollowers = async (req: Request, res: Response) => {
     const userId = req.user?.id;
-    if (!userId) return;
+    if (!userId) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
 
     try {
         //following me
@@ -216,7 +228,11 @@ export const getMyFollowers = async (req: Request, res: Response) => {
 
 export const getMyFollowing = async (req: Request, res: Response) => {
     const userId = req.user?.id;
-    if (!userId) return;
+    if (!userId) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
 
     try {
         const user = await prismaClient.user.findUnique({

@@ -5,7 +5,12 @@ import type { jwtPayload } from "../utils/generateToken.js";
 export default async function optionalAuth(req: Request, res: Response, next: NextFunction) {
     const accessToken = req.cookies.accessToken;
     const secret = process.env.JWT_SECRET;
-    if(!secret) return;
+    if(!secret) {
+        console.error("JWT_SECRET environment variable is not configured");
+        return res.status(500).json({
+            message: "Server configuration error"
+        });
+    }
 
     if(!accessToken) {
         return next();

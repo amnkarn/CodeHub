@@ -21,7 +21,11 @@ export const createIssue = async (req: Request, res: Response) => {
     }
 
     const userId = req.user?.id;
-    if(!userId) return;
+    if(!userId) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
 
     try {
         const ownerName = parsedParams.data.owner;
@@ -203,7 +207,11 @@ export const getIssueById = async (req: Request, res: Response) => {
 
 export const updateIssue = async (req: Request, res: Response) => {
     const userId = req.user?.id;
-    if(!userId) return;
+    if(!userId) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
 
     const parsedParams = issueByIdSchema.safeParse(req.params);
     if(!parsedParams.success) {
@@ -281,7 +289,11 @@ export const updateIssue = async (req: Request, res: Response) => {
 
 export const deleteIssue = async (req: Request, res: Response) => {
     const userId = req.user?.id;
-    if(!userId) return;
+    if(!userId) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
 
     const parsedParams = issueByIdSchema.safeParse(req.params);
     if(!parsedParams.success) {
@@ -327,7 +339,11 @@ export const deleteIssue = async (req: Request, res: Response) => {
 //own issues
 export const getMyIssues = async (req: Request, res: Response) => {
     const userId = req.user?.id;
-    if(!userId) return;
+    if(!userId) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
 
     try {
         const issuesAcrossAllRepos = await prismaClient.issue.findMany({
@@ -378,7 +394,11 @@ export const updateMyIssuesById = async (req: Request, res: Response) => {
     }
 
     const userId = req.user?.id;
-    if(!userId) return;
+    if(!userId) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
 
     const parsedData = issueUpdateSchema.safeParse(req.body);
     if(!parsedData.success) {

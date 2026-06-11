@@ -7,6 +7,7 @@ export default async function blackListToken(token: string, expiryInSeconds: num
             EX: expiryInSeconds
         });       
     } catch (error) {
-        console.log("Error in token blacklisting funtion", error)
+        console.error("Error in token blacklisting function:", error);
+        throw new Error("Failed to blacklist token");
     }
 }
