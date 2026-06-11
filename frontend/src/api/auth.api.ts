@@ -1,4 +1,5 @@
 import axiosInstanse from "../lib/axiosInstance";
+import { getCurrentUserApi } from "./user.api";
 
 
 interface RegisterUser {
@@ -29,7 +30,4 @@ export const refreshTokenApi = async () => {
     return response.data;
 }
 
-export const getMe = async () => {
-    const response = await axiosInstanse.get("/user/me");
-    return response.data.user;
-}
+export const getMe = getCurrentUserApi;
