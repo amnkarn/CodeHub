@@ -15,32 +15,7 @@ import useUser from "../hooks/useUser";
 import { useAuth } from "../hooks/useAuth";
 import { followUserApi, unfollowUserApi } from "../api/user.api";
 import ProfilePageNavbar from "../components/profilePage/navbar";
-
-export interface UserProfile {
-  name: string;
-  username: string;
-  avatarUrl?: string;
-  bio?: string;
-  followers: number;
-  following: number;
-  location?: string;
-  website?: string;
-  publicRepos: number;
-}
-
-export interface Repository {
-  id: string;
-  name: string;
-  description?: string;
-  visibility: string;
-
-  _count?: {
-    staredBy: number;
-    fork: number;
-    issues: number;
-  };
-  updatedAt?: string;
-}
+import type { Repository } from "../types/user";
 
 //const LANGUAGE_COLORS: Record<string, string> = {
 //  TypeScript: "#3178c6",
@@ -355,7 +330,7 @@ export default function ProfilePage({ username }: { username?: string }) {
                     <p className="font-mono text-sm">No public repositories</p>
                   </div>
                 ) : (
-                  repos?.map((repo) => {
+                  repos?.map((repo: Repository) => {
                     const isStarred = starredRepos.has(repo.name);
                     const displayStars = (repo._count?.staredBy || 0) + (isStarred ? 1 : 0);
                     const displayForks = repo._count?.fork || 0;

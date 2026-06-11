@@ -2,9 +2,11 @@ import type { Request, Response } from "express";
 import { addCommentParams, addCommentSchema, deleteCommentParams } from "../validators/commentSchema.js";
 import prismaClient from "../config/db.js";
 import { VISIBILITY } from "../generated/prisma/enums.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import { commentDetailSelect } from "../utils/prismaSelects.js";
 
 
-export const addComment = async (req: Request, res: Response) => {
+export const addComment = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if(!userId) {
         return res.status(400).json({
@@ -26,60 +28,43 @@ export const addComment = async (req: Request, res: Response) => {
         })
     }
 
-    
-    try {
-        const { repo, owner, issueId } = parsedParams.data;
+    const { repo, owner, issueId } = parsedParams.data;
 
-        //first find the repo
-        const targetRepo = await prismaClient.repository.findFirst({
-            where: {
-                name: repo,
-                owner: {
-                    username: owner
-                }
-            },
-            select: {
-                id: true
+    const targetRepo = await prismaClient.repository.findFirst({
+        where: {
+            name: repo,
+            owner: {
+                username: owner
             }
-        })
-        
-        if(!targetRepo) {
-            return res.status(400).json({
-                message: "Can't find the repo"
-            })
+        },
+        select: {
+            id: true
         }
-
-        const addComment = await prismaClient.comments.create({
-            data: {
-                comment: parseData.data.comment,
-                authorId: userId,
-                issueId: issueId,
-                repoId: targetRepo.id
-            },
-            select: {
-                id: true,
-                author: {
-                    select: { username: true }
-                },
-                comment: true,
-                createdAt: true,
-            }
-        })
-
-        return res.status(201).json({
-            message: "Comment added successfully",
-            addComment
-        })
-        
-    } catch (error) {
-        console.log("Error in addComment: ", error);
-        res.status(500).json({
-            message: "Error in server"
+    })
+    
+    if(!targetRepo) {
+        return res.status(400).json({
+            message: "Can't find the repo"
         })
     }
-}
 
-export const getComments = async (req: Request, res: Response) => {
+    const newComment = await prismaClient.comments.create({
+        data: {
+            comment: parseData.data.comment,
+            authorId: userId,
+            issueId: issueId,
+            repoId: targetRepo.id
+        },
+        select: commentDetailSelect
+    })
+
+    return res.status(201).json({
+        message: "Comment added successfully",
+        addComment: newComment
+    })
+});
+
+export const getComments = asyncHandler(async (req: Request, res: Response) => {
     const parsedParams = addCommentParams.safeParse(req.params);
     if(!parsedParams.success) {
         return res.status(400).json({
@@ -88,54 +73,38 @@ export const getComments = async (req: Request, res: Response) => {
     }
     
     const userId = req.user?.id;
+    const { repo, owner, issueId } = parsedParams.data;
 
-    try {
-        const { repo, owner, issueId } = parsedParams.data;
-
-        const allComments = await prismaClient.comments.findMany({
-            where: {
-                issueId: issueId,
-                repo: {
-                    name: repo,
-                    owner: {
-                        username: owner
-                    },
-                    OR: [
-                        { visibility: VISIBILITY.public },
-                        { ownerId: (userId as string) }
-                    ]
-                }
-            },
-            select: {
-                id: true,
-                author: {
-                    select: { username: true }
+    const allComments = await prismaClient.comments.findMany({
+        where: {
+            issueId: issueId,
+            repo: {
+                name: repo,
+                owner: {
+                    username: owner
                 },
-                comment: true,
-                createdAt: true,
+                OR: [
+                    { visibility: VISIBILITY.public },
+                    { ownerId: (userId as string) }
+                ]
             }
-        })
+        },
+        select: commentDetailSelect
+    })
 
-        if(allComments.length === 0) {
-            return res.status(200).json({
-                message: "No comments on this issue yet"
-            })
-        }
-
+    if(allComments.length === 0) {
         return res.status(200).json({
-            message: "Comment fetched successfully",
-            allComments
-        })
-        
-    } catch (error) {
-        console.log("Error in getComments: ", error);
-        res.status(500).json({
-            message: "Error in server"
+            message: "No comments on this issue yet"
         })
     }
-}
 
-export const deleteComment = async (req: Request, res: Response) => {
+    return res.status(200).json({
+        message: "Comment fetched successfully",
+        allComments
+    })
+});
+
+export const deleteComment = asyncHandler(async (req: Request, res: Response) => {
     const parsedParams = deleteCommentParams.safeParse(req.params);
     if(!parsedParams.success) {
         return res.status(400).json({
@@ -150,9 +119,9 @@ export const deleteComment = async (req: Request, res: Response) => {
         })
     }
 
-    try {
-        const { owner, repo, issueId, commentId } = parsedParams.data;
+    const { owner, repo, issueId, commentId } = parsedParams.data;
 
+    try {
         await prismaClient.comments.delete({
             where: {
                 id: commentId,
@@ -163,7 +132,7 @@ export const deleteComment = async (req: Request, res: Response) => {
                     }
                 },
                 issueId: issueId,
-                OR: [ //user should be the author of comment or can be owner of the repo
+                OR: [
                     { authorId: userId },
                     {
                         repo: {
@@ -175,19 +144,12 @@ export const deleteComment = async (req: Request, res: Response) => {
         })
 
         res.status(200).json({
-            messasge: "Comment removed successfully"
+            message: "Comment removed successfully"
         })
-
     } catch (error: any) {
-        if(error.code === 'P2025') {
-            return res.status(400).json({
-                message: "Can't find the comment to delete"
-            })
+        if (error.code === 'P2025') {
+            return res.status(404).json({ message: "Comment not found or unauthorized" })
         }
-
-        console.log("Error in deleteComment: ", error);
-        res.status(500).json({
-            message: "Error in server"
-        })
+        throw error;
     }
-}
+});

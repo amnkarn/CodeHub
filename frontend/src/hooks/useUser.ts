@@ -7,40 +7,7 @@ import {
     getUserRepositoriesApi
 } from "../api/user.api";
 import { useAuth } from "./useAuth";
-
-
-export interface UserProfile {
-  id?: string;
-  username: string;
-  email: string;
-  name: string;
-  createdAt: string;
-  followers?: Array<{
-    id: string;
-    username: string;
-    name: string;
-    email: string;
-    createdAt: string;
-  }>;
-  following?: Array<{
-    id: string;
-    username: string;
-    email: string;
-    name: string;
-    createdAt: string;
-  }>;
-  starRepos?: Array<{ id: string; name: string }>;
-  issues?: Array<{ id: string; title: string; status: string }>;
-  repositories?: Array<{ id: string; name: string; description: string; visibility: string }>;
-  forks?: number;
-  _count?: {
-    followedBy: number;
-    following: number;
-    starRepos: number;
-    issues: number;
-    forks: number;
-  };
-}
+import type { UserProfile } from "../types/user";
 
 export default function useUser(username?: string, isCurrentUser: boolean = false) {
     const [user, setUser] = useState<UserProfile | null>(null);
