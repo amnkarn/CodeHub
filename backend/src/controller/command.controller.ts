@@ -69,7 +69,8 @@ export async function init(argv: any) {
         }
 
     } catch (error) {
-        console.log("Error in intialising the repository", error);
+        console.error("Error initializing the repository:", error);
+        process.exitCode = 1;
     }
 }
 
@@ -96,8 +97,9 @@ export async function addRepo(argv: any) {
         if (error.code === 'ENOENT') {
             console.error(`Error: The file "${argv.file}" does not exist.`);
         } else {
-            console.error("Error adding file: ", error.message);
+            console.error("Error adding file:", error.message);
         }
+        process.exitCode = 1;
     }
 }
 
@@ -156,7 +158,8 @@ export async function commitRepo(argv: ArgumentsCamelCase<CommitArgs>) {
         console.log(`Message: ${argv.message}`)
 
     } catch (error) {
-        console.log("Error in commiting: ", error);
+        console.error("Error in committing:", error);
+        process.exitCode = 1;
     }
 }
 
@@ -198,7 +201,8 @@ export async function pushRepo() {
         console.log("All commits pushed to S3.");
         
     } catch (error) {
-        console.log("Error pushing to s3: ", error);
+        console.error("Error pushing to S3:", error);
+        process.exitCode = 1;
     }
 }
 
@@ -251,7 +255,8 @@ export async function pullRepo() {
         console.log("All commits pulled from s3 successfully");
 
     } catch (error) {
-        console.log("Error in pulling from s3: ", error);
+        console.error("Error pulling from S3:", error);
+        process.exitCode = 1;
     }
 }
 
@@ -281,6 +286,7 @@ export async function revertRepo({commitId}: {commitId: string}) {
         console.log(`Commit ${commitId} reverted successfully.`);
 
     } catch (error) {
-        console.log("Unable to revert: ", error);
+        console.error("Unable to revert:", error);
+        process.exitCode = 1;
     }
 }

@@ -240,6 +240,11 @@ export const getRepositoryByFullName = async (req: Request, res: Response) => {
 //Authenticated Operations
 export const getMyRepositories = async (req: Request, res: Response) => {
     const userId = req.user?.id;
+    if(!userId) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
 
     try {
         const userReopos = await prismaClient.user.findUnique({
@@ -279,6 +284,11 @@ export const getMyRepositories = async (req: Request, res: Response) => {
 
 export const getMyStarredRepos = async (req: Request, res: Response) => {
     const userId = req.user?.id;
+    if(!userId) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
 
     try {
         const userStarredReopos = await prismaClient.user.findUnique({
@@ -471,7 +481,9 @@ export const deleteRepository = async (req: Request, res: Response) => {
         if (error.code === 'P2025') { //Prisma's "record not found" error code
             return res.status(404).json({ message: "Repo not found" })
         }
-        throw error
+        res.status(500).json({
+            message: "Error in server"
+        })
     }
 }
 
@@ -651,7 +663,7 @@ export const unstarRepository = async (req: Request, res: Response) => {
             })
         }
         if(targetRepo.staredBy.length === 0) {
-            res.status(400).json({
+            return res.status(400).json({
                 message: "You haven't starred this repo"
             })
         }

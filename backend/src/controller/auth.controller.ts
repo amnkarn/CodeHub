@@ -137,8 +137,8 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
             })
         }
 
-        blackListToken(decodeRefreshToken.jti, 604800);
-        blackListToken(decodeAccessToken.jti, 900);
+        await blackListToken(decodeRefreshToken.jti, 604800);
+        await blackListToken(decodeAccessToken.jti, 900);
 
         generateToken(decodeRefreshToken.id, res);
 
@@ -156,7 +156,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
 }
 
 
-export const logoutUser = (req: Request, res: Response) => {
+export const logoutUser = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
     const accessToken = req.cookies.accessToken;
 
@@ -171,8 +171,8 @@ export const logoutUser = (req: Request, res: Response) => {
         const decodeAccessToken = jwt.verify(accessToken, process.env.JWT_SECRET!) as jwtPayload;
         
         //blacklist both tokens
-        blackListToken(decodeRefreshToken.jti, 604800);
-        blackListToken(decodeAccessToken.jti, 900);
+        await blackListToken(decodeRefreshToken.jti, 604800);
+        await blackListToken(decodeAccessToken.jti, 900);
 
         res.clearCookie("refreshToken");
         res.clearCookie("accessToken");

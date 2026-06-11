@@ -45,11 +45,13 @@ export interface UserProfile {
 export default function useUser(username?: string, isCurrentUser: boolean = false) {
     const [user, setUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const {user: currentUser} = useAuth();
 
     useEffect(() => {
         const fetchUserData = async () => {
             setLoading(true);
+            setError(null);
 
             try {
                 let userData: UserProfile | null = null;
@@ -81,7 +83,8 @@ export default function useUser(username?: string, isCurrentUser: boolean = fals
 
                 setUser(userData);
             } catch (error) {
-                console.log('Error in useUser: ', error);
+                const message = error instanceof Error ? error.message : "Failed to load user profile";
+                setError(message);
             } finally {
                 setLoading(false);
             }
@@ -90,5 +93,5 @@ export default function useUser(username?: string, isCurrentUser: boolean = fals
         fetchUserData();
     }, [username, isCurrentUser, currentUser]);
 
-    return { user, loading }
+    return { user, loading, error }
 }
