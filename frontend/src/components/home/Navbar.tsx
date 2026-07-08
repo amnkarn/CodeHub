@@ -14,6 +14,8 @@ export default function Navbar() {
     const [openSearchBox, setOpenSearchBox] = useState(false);
     const [lgtModal, setLgtModal] = useState(false);
     const { loading } = useAuth();
+    const [newModal, setNewModal] = useState(false);
+    const navigate = useNavigate();
 
 
     if (openSearchBox) {
@@ -55,9 +57,11 @@ export default function Navbar() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="rounded-md py-0.5 gap-1 px-2 border border-gray-600 flex items-center opacity-60 hover:opacity-85 cursor-pointer">
+                    <div className="rounded-md py-0.5 gap-1 px-2 border border-gray-600 flex items-center opacity-60 hover:opacity-85 cursor-pointer relative" onClick={() => setNewModal((prev) => !prev)}>
                         <NewAdd />
                         <span className="material-symbols-outlined text-xl!">arrow_drop_down</span>
+
+                        { newModal && <CreateModal /> }
                     </div>
 
                     <NavIconTemp icon={<Issue />} />
@@ -73,6 +77,7 @@ export default function Navbar() {
                         <ProfileImg onClick={changeState} />
                         { lgtModal && <ProfileModal /> }
                     </div>
+
                 </div>
             </div>
         </div>
@@ -103,6 +108,26 @@ function OpenSearchBox() {
     )
 }
 
+function CreateModal() {
+    const navigate = useNavigate();
+
+    return (
+        <div className="absolute top-12 left-0 flex flex-col items-center gap-2 bg-[#151B25] border border-zinc-500 px-5 py-5 rounded-lg">
+
+            <ModalLabels 
+                label="New Issue"
+                icon={<i className="fa-regular fa-user"></i>}
+                onClick={() => navigate("/new-issue")}
+            />
+
+            <ModalLabels 
+                label="New Repository"
+                icon={<i className="fa-solid fa-arrow-right-from-bracket"></i>}
+                onClick={() => navigate("/new-repo")}
+            />
+        </div>
+    )
+}
 
 function ProfileModal() {
     const { handleLogout } = useAuth();
@@ -145,8 +170,8 @@ interface Label {
 
 function ModalLabels({label, icon, onClick}: Label) {
     return (
-        <div className="flex items-center gap-3 text-gray-400 font-medium hover:text-white cursor-pointer hover:border-blue-400 text-[17px]" onClick={onClick} >
-            <p>{label}</p>
+        <div className="flex items-center gap-3 text-gray-400 font-medium hover:text-white cursor-pointer hover:border-blue-400 text-[15px]" onClick={onClick} >
+            <p className="whitespace-nowrap">{label}</p>
             {icon}
         </div>
     )

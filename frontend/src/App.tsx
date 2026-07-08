@@ -5,6 +5,8 @@ import AuthPage from "./pages/Auth";
 import Loader from "./components/Loader";
 import { useAuth } from "./hooks/useAuth";
 import ProfilePage from "./pages/ProfilePage";
+import NewIssue from "./pages/NewIssue";
+import NewRepository from "./pages/NewRepository";
 
 export default function AppRouter() { 
     return (
@@ -23,6 +25,18 @@ export default function AppRouter() {
             <Route path="/me" element={
                 <ProtectedRoute>
                     <ProfilePage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/new-issue" element={
+                <ProtectedRoute>
+                    <NewIssue />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/new-repo" element={
+                <ProtectedRoute>
+                    <NewRepository />
                 </ProtectedRoute>
             } />
 
